@@ -1,64 +1,160 @@
-.ct-button {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  font: inherit;
-  font-weight: 500;
-  line-height: 1.2;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.55rem 0.95rem;
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+@source "./**/*.{ts,tsx}";
+
+@theme inline {
+  --lp-timeline-track-height: 4px;
+  --lp-timeline-track-height-active: 7px;
+  --color-lp-timeline-buffered-color: var(--lp-timeline-buffered-color);
+  --color-lp-primary-foreground: var(--lp-primary-foreground);
+  --color-lp-primary: var(--lp-primary);
+  --color-lp-accent: var(--lp-accent);
 }
 
-.ct-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+:root {
+  --lp-accent: oklch(0.269 0 0);
+  --lp-primary: oklch(0.205 0 0);
+  --lp-primary-foreground: oklch(0.985 0 0);
+  --lp-timeline-buffered-color: oklch(0.985 0 0 / 0.4);
 }
 
-.ct-button--default {
-  color: #171717;
-  background: rgb(136 136 136 / 0.08);
-  border-color: rgb(136 136 136 / 0.28);
+.dark {
+  --lp-accent: oklch(0.97 0 0);
+  --lp-primary: oklch(0.205 0 0);
+  --lp-primary-foreground: oklch(0.985 0 0);
+  --lp-timeline-buffered-color: oklch(0.985 0 0 / 0.4);
 }
 
-.ct-button--default:hover:not(:disabled) {
-  background: rgb(136 136 136 / 0.14);
-}
-
-.ct-button--primary {
-  color: #fff;
-  background: #171717;
-  border-color: #171717;
-}
-
-.ct-button--primary:hover:not(:disabled) {
-  background: #333;
-  border-color: #333;
-}
-
-@media (prefers-color-scheme: dark) {
-  .ct-button--default {
-    color: #fafafa;
-    background: rgb(255 255 255 / 0.08);
-    border-color: rgb(255 255 255 / 0.18);
+@utility hit-area-debug {
+    position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+    @apply border border-dashed border-blue-500 bg-blue-500/10;
   }
-
-  .ct-button--default:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.12);
+  &:hover::before {
+    @apply border border-dashed border-green-500 bg-green-500/10;
   }
+}
 
-  .ct-button--primary {
-    color: #0a0a0a;
-    background: #fafafa;
-    border-color: #fafafa;
+@utility hit-area {
+    position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
   }
+}
 
-  .ct-button--primary:hover:not(:disabled) {
-    background: #e5e5e5;
-    border-color: #e5e5e5;
+@utility hit-area-* {
+    position: relative;
+    --hit-area-t: --spacing(--value(number) * -1); --hit-area-t: calc(--value([*]) * -1); --hit-area-t: calc(--value([*]) * -1);
+    --hit-area-b: --spacing(--value(number) * -1); --hit-area-b: calc(--value([*]) * -1); --hit-area-b: calc(--value([*]) * -1);
+    --hit-area-l: --spacing(--value(number) * -1); --hit-area-l: calc(--value([*]) * -1); --hit-area-l: calc(--value([*]) * -1);
+    --hit-area-r: --spacing(--value(number) * -1); --hit-area-r: calc(--value([*]) * -1); --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-l-* {
+    position: relative;
+    --hit-area-l: --spacing(--value(number) * -1); --hit-area-l: calc(--value([*]) * -1); --hit-area-l: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-r-* {
+    position: relative;
+    --hit-area-r: --spacing(--value(number) * -1); --hit-area-r: calc(--value([*]) * -1); --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-t-* {
+    position: relative;
+    --hit-area-t: --spacing(--value(number) * -1); --hit-area-t: calc(--value([*]) * -1); --hit-area-t: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-b-* {
+    position: relative;
+    --hit-area-b: --spacing(--value(number) * -1); --hit-area-b: calc(--value([*]) * -1); --hit-area-b: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-x-* {
+    position: relative;
+    --hit-area-l: --spacing(--value(number) * -1); --hit-area-l: calc(--value([*]) * -1); --hit-area-l: calc(--value([*]) * -1);
+    --hit-area-r: --spacing(--value(number) * -1); --hit-area-r: calc(--value([*]) * -1); --hit-area-r: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
+  }
+}
+
+@utility hit-area-y-* {
+    position: relative;
+    --hit-area-t: --spacing(--value(number) * -1); --hit-area-t: calc(--value([*]) * -1); --hit-area-t: calc(--value([*]) * -1);
+    --hit-area-b: --spacing(--value(number) * -1); --hit-area-b: calc(--value([*]) * -1); --hit-area-b: calc(--value([*]) * -1);
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--hit-area-t, 0px);
+    right: var(--hit-area-r, 0px);
+    bottom: var(--hit-area-b, 0px);
+    left: var(--hit-area-l, 0px);
+    pointer-events: inherit;
   }
 }

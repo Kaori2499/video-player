@@ -3,64 +3,35 @@
   color-scheme: light dark;
   --page-bg: #ffffff;
   --page-fg: #171717;
-  --muted: #525252;
-  --code-bg: rgb(136 136 136 / 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --page-bg: #0a0a0a;
     --page-fg: #fafafa;
-    --muted: #a3a3a3;
-    --code-bg: rgb(255 255 255 / 0.08);
   }
+}
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
   background: var(--page-bg);
   color: var(--page-fg);
 }
 
-.page {
-  max-width: 40rem;
-  margin: 3rem auto;
-  padding: 0 1.25rem;
-}
-
-.lede {
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.lede code,
-.meta code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9em;
-  background: var(--code-bg);
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
-}
-
-.demo {
-  margin-top: 2rem;
-}
-
-.demo h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 0.75rem;
-}
-
-.row {
+#root {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  flex-direction: column;
 }
 
-.meta {
-  margin-top: 1rem;
-  color: var(--muted);
-  font-size: 0.95rem;
+.demo-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
 }

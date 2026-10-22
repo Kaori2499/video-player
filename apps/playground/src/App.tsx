@@ -1,40 +1,40 @@
-import { useState } from "react";
-import { Button } from "@component-template/react";
+import {
+  PlayerBlur,
+  PlayerLayout,
+  PlayerPreview,
+  PlayerShadow,
+} from "@component-template/react";
+import { useDemoVideos } from "./useDemoVideos";
 
 export function App() {
-  const [clicks, setClicks] = useState(0);
+  const { videos, status } = useDemoVideos();
+
+  if (status === "loading") {
+    return (
+      <div data-testid="demo-loading" className="demo-loading">
+        Loading open videos…
+      </div>
+    );
+  }
 
   return (
-    <main className="page">
-      <h1>Component preview</h1>
-      <p className="lede">
-        Playground for <code>@component-template/react</code>. Swap the stub
-        component in <code>packages/react</code>, rebuild, and preview variants
-        here.
-      </p>
-
-      <section className="demo" aria-label="Button variants">
-        <h2>Button</h2>
-        <div className="row">
-          <Button data-testid="button-default">Default</Button>
-          <Button variant="primary" data-testid="button-primary">
-            Primary
-          </Button>
-          <Button disabled data-testid="button-disabled">
-            Disabled
-          </Button>
-          <Button
-            variant="primary"
-            data-testid="button-clickable"
-            onClick={() => setClicks((n) => n + 1)}
-          >
-            Click me
-          </Button>
-        </div>
-        <p data-testid="click-count" className="meta">
-          Clicks: {clicks}
-        </p>
-      </section>
-    </main>
+    <PlayerLayout.Provider videos={videos}>
+      <PlayerLayout.Root
+        data-testid="player-layout"
+        data-video-count={videos.length}
+      >
+        <PlayerLayout.Background data-testid="player-layout-background">
+          <PlayerPreview.Active />
+        </PlayerLayout.Background>
+        <PlayerLayout.Filter data-testid="player-layout-filter">
+          <PlayerShadow edge="left" />
+          <PlayerShadow edge="right" minViewport="2xl" />
+          <PlayerBlur />
+        </PlayerLayout.Filter>
+        <PlayerLayout.Header data-testid="player-layout-header" />
+        <PlayerLayout.Content data-testid="player-layout-content" />
+        <PlayerLayout.Footer data-testid="player-layout-footer" />
+      </PlayerLayout.Root>
+    </PlayerLayout.Provider>
   );
 }

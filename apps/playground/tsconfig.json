@@ -2,11 +2,23 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
     "paths": {
-      "@component-template/react": ["../../packages/react/src/index.ts"],
-      "@component-template/react/styles.css": ["../../packages/react/src/styles.css"]
+      "@/*": [
+        "../../packages/react/src/*"
+      ],
+      "@component-template/react": [
+        "../../packages/react/src/index.ts"
+      ],
+      "@component-template/react/styles.css": [
+        "../../packages/react/src/styles.css"
+      ]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../packages/react/src"
+  ]
 }

@@ -2,26 +2,26 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const playgroundDir = path.dirname(fileURLToPath(import.meta.url));
+const reactPkgSrc = path.resolve(playgroundDir, "../../packages/react/src");
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: [
       {
         find: "@component-template/react/styles.css",
-        replacement: path.resolve(
-          playgroundDir,
-          "../../packages/react/src/styles.css"
-        ),
+        replacement: path.resolve(reactPkgSrc, "styles.css"),
       },
       {
         find: "@component-template/react",
-        replacement: path.resolve(
-          playgroundDir,
-          "../../packages/react/src/index.ts"
-        ),
+        replacement: path.resolve(reactPkgSrc, "index.ts"),
+      },
+      {
+        find: "@",
+        replacement: reactPkgSrc,
       },
     ],
   },

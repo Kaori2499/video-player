@@ -1,40 +1,22 @@
-import {
-  PlayerBlur,
-  PlayerLayout,
-  PlayerPreview,
-  PlayerShadow,
-} from "@component-template/react";
-import { useDemoVideos } from "./useDemoVideos";
+import { Route, Routes } from "react-router-dom";
+import { PlayerBrandPage } from "./components/player-brand/page";
+import { PlayerCarouselPage } from "./components/player-carousel/page";
+import { PlayerFeaturePage } from "./components/player-feature/page";
+import { PlayerBlurPage } from "./components/player-blur/page";
+import { PlayerLayoutPage } from "./components/player-layout/page";
+import { PlayerPage } from "./components/player/page";
+import { PlayerShadowPage } from "./components/player-shadow/page";
 
 export function App() {
-  const { videos, status } = useDemoVideos();
-
-  if (status === "loading") {
-    return (
-      <div data-testid="demo-loading" className="demo-loading">
-        Loading open videos…
-      </div>
-    );
-  }
-
   return (
-    <PlayerLayout.Provider videos={videos}>
-      <PlayerLayout.Root
-        data-testid="player-layout"
-        data-video-count={videos.length}
-      >
-        <PlayerLayout.Background data-testid="player-layout-background">
-          <PlayerPreview.Active />
-        </PlayerLayout.Background>
-        <PlayerLayout.Filter data-testid="player-layout-filter">
-          <PlayerShadow edge="left" />
-          <PlayerShadow edge="right" minViewport="2xl" />
-          <PlayerBlur />
-        </PlayerLayout.Filter>
-        <PlayerLayout.Header data-testid="player-layout-header" />
-        <PlayerLayout.Content data-testid="player-layout-content" />
-        <PlayerLayout.Footer data-testid="player-layout-footer" />
-      </PlayerLayout.Root>
-    </PlayerLayout.Provider>
+    <Routes>
+      <Route path="/" element={<PlayerPage />} />
+      <Route path="/player-shadow" element={<PlayerShadowPage />} />
+      <Route path="/player-blur" element={<PlayerBlurPage />} />
+      <Route path="/player-layout" element={<PlayerLayoutPage />} />
+      <Route path="/player-brand" element={<PlayerBrandPage />} />
+      <Route path="/player-feature" element={<PlayerFeaturePage />} />
+      <Route path="/player-carousel" element={<PlayerCarouselPage />} />
+    </Routes>
   );
 }

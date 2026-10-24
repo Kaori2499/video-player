@@ -1,14 +1,20 @@
+@theme inline {
+  --color-foreground: var(--foreground);
+}
+
 :root {
-  font-family: system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   color-scheme: light dark;
   --page-bg: #ffffff;
   --page-fg: #171717;
+  --foreground: var(--page-fg);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --page-bg: #0a0a0a;
     --page-fg: #fafafa;
+    --foreground: var(--page-fg);
   }
 }
 

@@ -6,6 +6,23 @@
 @theme inline {
   --lp-timeline-track-height: 4px;
   --lp-timeline-track-height-active: 7px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-vp-feature-play-bg: var(--vp-feature-play-bg);
+  --color-vp-feature-play-bg-hover: var(--vp-feature-play-bg-hover);
+  --color-vp-feature-play-fg: var(--vp-feature-play-fg);
   --color-lp-timeline-buffered-color: var(--lp-timeline-buffered-color);
   --color-lp-primary-foreground: var(--lp-primary-foreground);
   --color-lp-primary: var(--lp-primary);
@@ -13,6 +30,25 @@
 }
 
 :root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --vp-feature-play-bg: oklch(0.97 0 0);
+  --vp-feature-play-bg-hover: oklch(0.92 0 0);
+  --vp-feature-play-fg: oklch(0.205 0 0);
+  --vp-feature-social-bg: color-mix(in oklch, var(--muted) 15%, transparent);
+  --vp-feature-social-bg-hover: color-mix(in oklch, var(--muted) 80%, transparent);
   --lp-accent: oklch(0.269 0 0);
   --lp-primary: oklch(0.205 0 0);
   --lp-primary-foreground: oklch(0.985 0 0);
@@ -20,10 +56,47 @@
 }
 
 .dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
   --lp-accent: oklch(0.97 0 0);
   --lp-primary: oklch(0.205 0 0);
   --lp-primary-foreground: oklch(0.985 0 0);
   --lp-timeline-buffered-color: oklch(0.985 0 0 / 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --lp-accent: oklch(0.97 0 0);
+    --lp-primary: oklch(0.205 0 0);
+    --lp-primary-foreground: oklch(0.985 0 0);
+    --lp-timeline-buffered-color: oklch(0.985 0 0 / 0.4);
+  }
 }
 
 @utility hit-area-debug {
@@ -157,4 +230,31 @@
     left: var(--hit-area-l, 0px);
     pointer-events: inherit;
   }
+}
+
+[data-vp-carousel-part="controls"] {
+  box-sizing: border-box;
+  width: 64rem;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+[data-vp-carousel-part="nav-prev"],
+[data-vp-carousel-part="nav-next"] {
+  border: 1px solid color-mix(in oklch, var(--foreground) 5%, transparent);
+}
+
+[data-vp-carousel-part="slide"] {
+  transition: width 320ms ease-out;
+}
+
+[data-vp-carousel] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-vp-carousel]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }

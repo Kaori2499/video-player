@@ -9,14 +9,54 @@ export type { Player } from "./player.types";
 export { PlayerContextProvider, usePlayerContext } from "./player.context";
 export type { PlayerContextProviderProps } from "./player.context";
 export { PlayerPreview } from "./player.preview";
-export type { PlayerPreviewProps } from "./player.preview";
+export type { PlayerPreviewUrlProps } from "./player.preview";
 export { PlayerBlur } from "./player.blur";
-export type { PlayerBlurProps, PlayerBlurStrength } from "./player.blur";
-export { PlayerShadow } from "./player.shadow";
+export type { PlayerBlurStrength, PlayerBlurSurfaceProps } from "./player.blur";
+export { PLAYER_FEATURE_DEFAULTS, PlayerFeature } from "./player.feature";
+export type {
+  PlayerFeatureDateProps,
+  PlayerFeatureDescriptionProps,
+  PlayerFeatureDetailsRowProps,
+  PlayerFeatureDotProps,
+  PlayerFeatureDurationProps,
+  PlayerFeatureFollowLabelProps,
+  PlayerFeatureFromActiveVideoProps,
+  PlayerFeatureSocialButtonProps,
+  PlayerFeatureLinkProps,
+  PlayerFeatureLinksProps,
+  PlayerFeatureMetaProps,
+  PlayerFeaturePlayProps,
+  PlayerFeatureRootProps,
+  PlayerFeatureTitleProps,
+} from "./player.feature";
+export { PLAYER_CAROUSEL_DEFAULTS, PlayerCarousel } from "./player.carousel";
+export type {
+  PlayerCarouselCaptionProps,
+  PlayerCarouselControlsProps,
+  PlayerCarouselEpisodeProps,
+  PlayerCarouselImageProps,
+  PlayerCarouselMediaProps,
+  PlayerCarouselRootProps,
+  PlayerCarouselSlideProps,
+  PlayerCarouselTitleProps,
+  PlayerCarouselTrackProps,
+  PlayerCarouselViewportProps,
+} from "./player.carousel";
+export { PLAYER_BRAND_DEFAULTS, PlayerBrand } from "./player.brand";
+export type {
+  PlayerBrandIconProps,
+  PlayerBrandLabelLineProps,
+  PlayerBrandLabelProps,
+  PlayerBrandRootProps,
+  PlayerBrandSeparatorProps,
+} from "./player.brand";
+export { PLAYER_SHADOW_DEFAULTS, PlayerShadow } from "./player.shadow";
 export type {
   PlayerShadowEdge,
+  PlayerShadowEdgeProps,
+  PlayerShadowGradientEase,
   PlayerShadowMinViewport,
-  PlayerShadowProps,
+  PlayerShadowRootProps,
 } from "./player.shadow";
 
 export {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { usePlayerContext } from "./player.context";
 
-export type PlayerPreviewProps = {
+export type PlayerPreviewUrlProps = {
   url: string;
 };
 
@@ -16,18 +16,27 @@ function pauseOnFirstFrame(video: HTMLVideoElement) {
   }
 }
 
-type PlayerPreviewVideoProps = PlayerPreviewProps & {
-  inactive?: boolean;
-};
+function PlayerPreviewLoop({ url }: PlayerPreviewUrlProps) {
+  return (
+    <video
+      data-vp-preview=""
+      data-vp-preview-mode="loop"
+      className="block h-full w-full object-cover"
+      src={url}
+      aria-label="Video preview"
+      autoPlay
+      muted
+      playsInline
+      loop
+      preload="auto"
+    />
+  );
+}
 
-function PlayerPreviewVideo({ url, inactive = false }: PlayerPreviewVideoProps) {
+function PlayerPreviewFirstFrame({ url }: PlayerPreviewUrlProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!inactive) {
-      return;
-    }
-
     const video = videoRef.current;
     if (!video) {
       return;
@@ -46,20 +55,18 @@ function PlayerPreviewVideo({ url, inactive = false }: PlayerPreviewVideoProps) 
       video.removeEventListener("loadeddata", syncFirstFrame);
       video.removeEventListener("seeked", syncFirstFrame);
     };
-  }, [inactive, url]);
+  }, [url]);
 
   return (
     <video
       ref={videoRef}
       data-vp-preview=""
-      data-vp-preview-inactive={inactive ? "" : undefined}
+      data-vp-preview-mode="first-frame"
       className="block h-full w-full object-cover"
       src={url}
       aria-label="Video preview"
-      autoPlay={!inactive}
       muted
       playsInline
-      loop={!inactive}
       preload="auto"
     />
   );
@@ -79,7 +86,7 @@ function PlayerPreviewActive() {
     return null;
   }
 
-  return <PlayerPreviewVideo url={url} />;
+  return <PlayerPreviewLoop url={url} />;
 }
 
 function PlayerPreviewInactive() {
@@ -89,10 +96,12 @@ function PlayerPreviewInactive() {
     return null;
   }
 
-  return <PlayerPreviewVideo url={url} inactive />;
+  return <PlayerPreviewFirstFrame url={url} />;
 }
 
-export const PlayerPreview = Object.assign(PlayerPreviewVideo, {
+export const PlayerPreview = {
   Active: PlayerPreviewActive,
   Inactive: PlayerPreviewInactive,
-});
+  Loop: PlayerPreviewLoop,
+  FirstFrame: PlayerPreviewFirstFrame,
+};

@@ -3,31 +3,52 @@ import type { HTMLAttributes } from "react";
 
 export type PlayerBlurStrength = "sm" | "md" | "lg";
 
-export type PlayerBlurProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
-  strength?: PlayerBlurStrength;
-};
+const blurShellClassName =
+  "pointer-events-none absolute inset-0 z-[2] h-full w-full";
 
-const strengthClassName: Record<PlayerBlurStrength, string> = {
-  sm: "backdrop-blur-sm",
-  md: "backdrop-blur-md",
-  lg: "backdrop-blur-lg",
-};
+export type PlayerBlurSurfaceProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "children"
+>;
 
-export function PlayerBlur({
-  strength = "sm",
-  className,
-  ...props
-}: PlayerBlurProps) {
+function PlayerBlurSm({ className, ...props }: PlayerBlurSurfaceProps) {
   return (
     <div
       data-vp-blur=""
+      data-vp-blur-strength="sm"
       aria-hidden
-      className={cn(
-        "pointer-events-none absolute inset-0 z-[2] h-full w-full",
-        strengthClassName[strength],
-        className,
-      )}
+      className={cn(blurShellClassName, "backdrop-blur-sm", className)}
       {...props}
     />
   );
 }
+
+function PlayerBlurMd({ className, ...props }: PlayerBlurSurfaceProps) {
+  return (
+    <div
+      data-vp-blur=""
+      data-vp-blur-strength="md"
+      aria-hidden
+      className={cn(blurShellClassName, "backdrop-blur-md", className)}
+      {...props}
+    />
+  );
+}
+
+function PlayerBlurLg({ className, ...props }: PlayerBlurSurfaceProps) {
+  return (
+    <div
+      data-vp-blur=""
+      data-vp-blur-strength="lg"
+      aria-hidden
+      className={cn(blurShellClassName, "backdrop-blur-lg", className)}
+      {...props}
+    />
+  );
+}
+
+export const PlayerBlur = {
+  Sm: PlayerBlurSm,
+  Md: PlayerBlurMd,
+  Lg: PlayerBlurLg,
+};

@@ -47,11 +47,6 @@ const MAX_WIDTH_CLASS_NAME: Record<PlayerLayoutMaxWidth, string | undefined> = {
   "7xl": "max-w-7xl",
 };
 
-const paddingSliders = {
-  paddingXRem: [0, 0, 6, 0.125] as [number, number, number, number],
-  paddingYRem: [0, 0, 6, 0.125] as [number, number, number, number],
-};
-
 const regionBase = {
   maxHeightRem: [0, 0, 48, 0.25] as [number, number, number, number],
   paddingXRem: [0, 0, 6, 0.125] as [number, number, number, number],
@@ -62,7 +57,8 @@ export const PLAYER_LAYOUT_DIAL_CONFIG = {
   root: {
     heightDvh: [100, 40, 100, 1] as [number, number, number, number],
     maxWidth: maxWidthSelect("none"),
-    ...paddingSliders,
+    paddingXRem: [1.5, 0, 6, 0.125] as [number, number, number, number],
+    paddingYRem: [0, 0, 6, 0.125] as [number, number, number, number],
   },
   header: {
     ...regionBase,
@@ -78,6 +74,7 @@ export const PLAYER_LAYOUT_DIAL_CONFIG = {
     maxWidth: maxWidthSelect("none"),
     paddingYRem: [0.5, 0, 6, 0.125] as [number, number, number, number],
   },
+  showRegionBorders: false,
   previewCrossfadeDurationMs: [320, 0, 3000, 10] as [
     number,
     number,
@@ -110,6 +107,7 @@ export type PlayerLayoutDialValues = {
   header: PlayerLayoutRegionDial;
   content: PlayerLayoutRegionDial;
   footer: PlayerLayoutRegionDial;
+  showRegionBorders: boolean;
   previewCrossfadeDurationMs: number;
 };
 

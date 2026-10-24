@@ -47,6 +47,13 @@ export const PLAYER_FEATURE_DIAL_CONFIG = {
   },
   gapRem: [1.75, 0, 2, 0.0625] as [number, number, number, number],
   descriptionMaxWidthRem: [20.5, 16, 48, 0.5] as [number, number, number, number],
+  plusLighter: true,
+  crossfade: {
+    enabled: true,
+    exitDurationMs: [240, 0, 3000, 10] as [number, number, number, number],
+    enterDurationMs: [320, 0, 3000, 10] as [number, number, number, number],
+    maxBlurPx: [8, 0, 40, 0.5] as [number, number, number, number],
+  },
   dateText: "Oct 29, 2024",
   durationText: "16 min",
   reset: { type: "action", label: "Reset to defaults" },

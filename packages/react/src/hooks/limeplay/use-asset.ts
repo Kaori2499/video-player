@@ -261,6 +261,12 @@ export interface UseAssetLoader<TItem extends TAsset> {
 
 /** Session-local loading options for asset source loading. */
 export interface UseAssetOptions<TItem extends TAsset> {
+  /**
+   * Load the next playlist item when the current one ends.
+   * Set to `false` to leave playback stopped on the finished item.
+   * @default true
+   */
+  advanceOnEnded?: boolean
   /** Allow autoplay on the first loaded asset when the media element requests autoplay. */
   autoplayFirst?: boolean
   /** Resolve a stable asset ID when `asset.id` is missing or insufficient. */
@@ -981,6 +987,9 @@ function AssetSetup() {
     })
 
     const offEnded = events.on("ended", () => {
+      const options = api.getState().asset.activeSession?.loading as
+        undefined | UseAssetOptions<TAsset>
+      if (options?.advanceOnEnded === false) return
       if (getHasNext()) {
         api.getState().playlist.next()
       }

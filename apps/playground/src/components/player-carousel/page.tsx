@@ -27,7 +27,12 @@ export function PlayerCarouselPage() {
             <PlayerBlurLayer values={blur} />
           </>
         }
-        footer={<PlayerCarouselFooter carousel={carousel} />}
+        footer={
+          <PlayerCarouselFooter
+            carousel={carousel.values}
+            slideEnterEpoch={carousel.slideEnterEpoch}
+          />
+        }
       />
       <DialRoot position="top-right" theme="system" />
     </>

@@ -23,6 +23,18 @@ export {
   PLAYER_FEATURE_DEFAULTS,
   PlayerFeature,
 } from "./player.feature";
+export {
+  PLAYER_FEATURE_CROSSFADE_DEFAULTS,
+  playerFeatureCrossfadeLayerStyle,
+  usePlayerFeatureCrossfade,
+} from "./player.feature.crossfade";
+export type {
+  PlayerFeatureCrossfadeConfig,
+  PlayerFeatureCrossfadeLayer,
+  PlayerFeatureCrossfadePhase,
+  PlayerFeatureCrossfadeStack,
+  PlayerFeatureCrossfadeTransition,
+} from "./player.feature.crossfade";
 export type {
   PlayerFeatureDateProps,
   PlayerFeatureDescriptionProps,

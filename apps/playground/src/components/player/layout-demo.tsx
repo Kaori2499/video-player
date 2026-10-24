@@ -30,6 +30,7 @@ export function PlayerLayoutDemo({
         content={content}
         footer={footer}
         preview={preview}
+        dialMountOptions={layoutMountOptions}
       />
       <DialRoot position="top-right" theme="system" />
     </>

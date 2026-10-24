@@ -10,6 +10,7 @@ import type { Player } from "./player.types";
 
 type PlayerLayoutShellContextValue = {
   layoutId: string;
+  showRegionBorders: boolean;
 };
 
 const PlayerLayoutShellContext =
@@ -32,22 +33,32 @@ const layoutBackgroundClassName =
   "pointer-events-none absolute inset-0 z-0 box-border h-full w-full border-2 border-neutral-600 bg-neutral-500/10 dark:border-neutral-700 dark:bg-white/5";
 
 const layoutFilterClassName =
-  "pointer-events-none absolute inset-0 z-[1] box-border h-full w-full border-2 border-dotted border-neutral-500/80 dark:border-neutral-400/60";
+  "pointer-events-none absolute inset-0 z-[1] box-border h-full w-full";
 
-const layoutRegionClassName =
-  "relative box-border min-h-12 border-2 border-dashed border-neutral-400 dark:border-neutral-500";
+const layoutFilterBorderClassName =
+  "border-2 border-dotted border-neutral-500/80 dark:border-neutral-400/60";
+
+const layoutRegionClassName = "relative box-border min-h-12";
+
+const layoutRegionBorderClassName =
+  "border-2 border-dashed border-neutral-400 dark:border-neutral-500";
 
 export type PlayerLayoutRootProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
+  /** Dashed guides on the filter, header, content, and footer. */
+  showRegionBorders?: boolean;
 };
 
 function PlayerLayoutRoot({
   children,
   className,
+  showRegionBorders = false,
   ...props
 }: PlayerLayoutRootProps) {
   return (
-    <PlayerLayoutShellContext.Provider value={{ layoutId: "player.layout" }}>
+    <PlayerLayoutShellContext.Provider
+      value={{ layoutId: "player.layout", showRegionBorders }}
+    >
       <div
         data-vp-layout=""
         className={cn(layoutRootClassName, className)}
@@ -89,13 +100,17 @@ function PlayerLayoutFilter({
   children,
   ...props
 }: PlayerLayoutFilterProps) {
-  usePlayerLayoutShellContext("Filter");
+  const { showRegionBorders } = usePlayerLayoutShellContext("Filter");
 
   return (
     <div
       aria-hidden={children ? undefined : true}
       data-vp-layout-region="filter"
-      className={cn(layoutFilterClassName, className)}
+      className={cn(
+        layoutFilterClassName,
+        showRegionBorders && layoutFilterBorderClassName,
+        className,
+      )}
       {...props}
     >
       {children}
@@ -108,13 +123,14 @@ function PlayerLayoutHeader({
   children,
   ...props
 }: PlayerLayoutRegionProps) {
-  usePlayerLayoutShellContext("Header");
+  const { showRegionBorders } = usePlayerLayoutShellContext("Header");
 
   return (
     <header
       data-vp-layout-region="header"
       className={cn(
         layoutRegionClassName,
+        showRegionBorders && layoutRegionBorderClassName,
         "z-30 min-h-14 shrink-0",
         className,
       )}
@@ -130,12 +146,17 @@ function PlayerLayoutContent({
   children,
   ...props
 }: PlayerLayoutRegionProps) {
-  usePlayerLayoutShellContext("Content");
+  const { showRegionBorders } = usePlayerLayoutShellContext("Content");
 
   return (
     <main
       data-vp-layout-region="content"
-      className={cn(layoutRegionClassName, "z-10 min-h-0", className)}
+      className={cn(
+        layoutRegionClassName,
+        showRegionBorders && layoutRegionBorderClassName,
+        "z-10 min-h-0",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -148,13 +169,14 @@ function PlayerLayoutFooter({
   children,
   ...props
 }: PlayerLayoutRegionProps) {
-  usePlayerLayoutShellContext("Footer");
+  const { showRegionBorders } = usePlayerLayoutShellContext("Footer");
 
   return (
     <footer
       data-vp-layout-region="footer"
       className={cn(
         layoutRegionClassName,
+        showRegionBorders && layoutRegionBorderClassName,
         "z-20 min-h-16 shrink-0",
         className,
       )}

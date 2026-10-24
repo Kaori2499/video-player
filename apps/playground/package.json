@@ -16,7 +16,8 @@
     "motion": "^14.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "shaka-player": "^5.3.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

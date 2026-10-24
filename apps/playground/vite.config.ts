@@ -9,6 +9,12 @@ const reactPkgSrc = path.resolve(playgroundDir, "../../packages/react/src");
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    include: [
+      "shaka-player",
+      "shaka-player/dist/shaka-player.compiled.debug",
+    ],
+  },
   resolve: {
     alias: [
       {

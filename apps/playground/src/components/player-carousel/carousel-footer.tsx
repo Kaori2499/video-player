@@ -4,7 +4,9 @@ import {
   type PlayerCarouselSlideEase,
 } from "@component-template/react";
 import { useCarouselCatalog } from "../../carousel/useCarouselCatalog";
-import type { PlayerCarouselDialValues } from "./dialkit";
+import type { PlayerPageEnterDialValues } from "../player-enter/dialkit";
+import type { CarouselSlideEnterDialValues, PlayerCarouselDialValues } from "./dialkit";
+import { resolveCarouselSlideEnter } from "./slide-enter";
 
 function slideTransitionEaseFromDial(
   curve: PlayerCarouselDialValues["slideTransitionCurve"],
@@ -17,13 +19,26 @@ function slideTransitionEaseFromDial(
 
 export function PlayerCarouselFooter({
   carousel,
+  slideEnter,
+  slideEnterEpoch = 0,
+  slideEnterBaseDelayMs = 0,
 }: {
   carousel: PlayerCarouselDialValues;
+  /** When set (main page), overrides `carousel.slideEnter` from the carousel panel. */
+  slideEnter?: CarouselSlideEnterDialValues | PlayerPageEnterDialValues["carouselSlides"];
+  /** Bump with page enter replay so per-slide animation runs again. */
+  slideEnterEpoch?: number;
+  /** Wait until the carousel's slot in the page-enter sequence. */
+  slideEnterBaseDelayMs?: number;
 }) {
   const { entries, status } = useCarouselCatalog();
   const { state, actions } = PlayerLayout.useContext();
   const slideTransitionEase = slideTransitionEaseFromDial(
     carousel.slideTransitionCurve,
+  );
+  const slideEnterConfig = resolveCarouselSlideEnter(
+    carousel.slideEnter,
+    slideEnter,
   );
 
   if (status !== "ready" || entries.length === 0) {
@@ -46,6 +61,13 @@ export function PlayerCarouselFooter({
         navButtonHoverBg={carousel.navButtonHoverBg}
         slideTransitionDurationMs={carousel.slideTransitionDurationMs}
         slideTransitionEase={slideTransitionEase}
+        slideEnterEnabled={slideEnterConfig.enabled}
+        slideEnterStaggerMs={slideEnterConfig.staggerMs}
+        slideEnterDurationMs={slideEnterConfig.durationMs}
+        slideEnterMaxBlurPx={slideEnterConfig.maxBlurPx}
+        slideEnterTranslateYRem={slideEnterConfig.translateYRem}
+        slideEnterBaseDelayMs={slideEnterBaseDelayMs}
+        slideEnterEpoch={slideEnterEpoch}
       >
         <PlayerCarousel.Controls />
         <PlayerCarousel.Viewport>

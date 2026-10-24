@@ -8,6 +8,8 @@ import {
   playerLayoutRootStyle,
 } from "../player-layout/dialkit";
 import { useCarouselCatalog } from "../../carousel/useCarouselCatalog";
+import type { PlaygroundDialKitMountOptions } from "../dialkit/playground-dialkit";
+import { PlayerPlaybackProvider } from "../player-playback/playback-context";
 
 export function PlayerLayoutShell({
   layout,
@@ -16,6 +18,7 @@ export function PlayerLayoutShell({
   content,
   footer,
   preview = "active",
+  dialMountOptions,
 }: {
   layout: PlayerLayoutDialValues;
   filter?: ReactNode;
@@ -23,6 +26,7 @@ export function PlayerLayoutShell({
   content?: ReactNode;
   footer?: ReactNode;
   preview?: "active" | "inactive";
+  dialMountOptions?: PlaygroundDialKitMountOptions;
 }) {
   const { videos, status } = useCarouselCatalog();
 
@@ -44,11 +48,13 @@ export function PlayerLayoutShell({
 
   return (
     <PlayerLayout.Provider videos={videos}>
+      <PlayerPlaybackProvider dialMountOptions={dialMountOptions}>
       <PlayerLayout.Root
         data-testid="player-layout"
         data-video-count={videos.length}
         className={playerLayoutMaxWidthClassName(layout.root.maxWidth)}
         style={playerLayoutRootStyle(layout.root)}
+        showRegionBorders={layout.showRegionBorders}
       >
         <PlayerLayout.Background data-testid="player-layout-background">
           {preview === "inactive" ? (
@@ -92,6 +98,7 @@ export function PlayerLayoutShell({
           {footer}
         </PlayerLayout.Footer>
       </PlayerLayout.Root>
+      </PlayerPlaybackProvider>
     </PlayerLayout.Provider>
   );
 }

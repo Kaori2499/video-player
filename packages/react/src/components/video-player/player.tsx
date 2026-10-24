@@ -12,6 +12,7 @@ import {
   PlayerRootContainer,
   type PlayerRootContainerLayout,
 } from "@/components/video-player/components/player-root-container"
+import type { UseControlsVisibilityOptions } from "@/hooks/limeplay/use-controls-visibility"
 import { TopOverlayContainer } from "@/components/video-player/components/top-overlay-container"
 import { MediaProvider } from "@/components/video-player/lib/media-kit"
 import { type TAsset, useAsset } from "@/hooks/limeplay/use-asset"
@@ -31,7 +32,9 @@ export interface VideoPlayerAsset extends TAsset {
   year?: string
 }
 
-export interface VideoPlayerProps extends PlaybackSourceControllerProps<VideoPlayerAsset> {
+export interface VideoPlayerProps
+  extends PlaybackSourceControllerProps<VideoPlayerAsset>,
+    UseControlsVisibilityOptions {
   children?: React.ReactNode
   className?: string
   debug?: boolean
@@ -68,6 +71,8 @@ export const VideoPlayer = React.forwardRef<HTMLDivElement, VideoPlayerProps>(
       source,
       sourceKey,
       theme = "auto",
+      controlsHideDelay,
+      hideCursorOnIdle,
     },
     ref
   ) {
@@ -76,6 +81,8 @@ export const VideoPlayer = React.forwardRef<HTMLDivElement, VideoPlayerProps>(
         <PlayerRootContainer
           className={cn(className, theme === "dark" && "dark")}
           layout={layout}
+          controlsHideDelay={controlsHideDelay}
+          hideCursorOnIdle={hideCursorOnIdle}
           ref={ref}
         >
           <PlaybackSourceController

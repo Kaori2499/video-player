@@ -42,7 +42,8 @@ export function useControlsVisibility({
     idle &&
     status !== "buffering" &&
     status !== "error" &&
-    status !== "paused"
+    status !== "paused" &&
+    status !== "ended"
 
   const clearHideTimer = React.useCallback(() => {
     if (hideTimerRef.current === null) return

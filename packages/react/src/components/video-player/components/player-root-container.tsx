@@ -3,12 +3,17 @@ import React from "react"
 import type { RootContainerProps } from "@/components/limeplay/root-container"
 
 import { cn } from "@/lib/utils"
-import { useControlsVisibility } from "@/hooks/limeplay/use-controls-visibility"
+import {
+  useControlsVisibility,
+  type UseControlsVisibilityOptions,
+} from "@/hooks/limeplay/use-controls-visibility"
 import { RootContainer } from "@/components/limeplay/root-container"
 
 export type PlayerRootContainerLayout = "aspect" | "fill"
 
-export interface PlayerRootContainerProps extends RootContainerProps {
+export interface PlayerRootContainerProps
+  extends RootContainerProps,
+    UseControlsVisibilityOptions {
   /**
    * Controls how the player frame gets its size.
    *
@@ -22,8 +27,18 @@ export const PlayerRootContainer = React.forwardRef<
   HTMLDivElement,
   PlayerRootContainerProps
 >(function PlayerRootContainer(props, ref) {
-  const { aspectRatio, className, layout = "aspect", ...rootProps } = props
-  const controlsVisibility = useControlsVisibility()
+  const {
+    aspectRatio,
+    className,
+    controlsHideDelay,
+    hideCursorOnIdle,
+    layout = "aspect",
+    ...rootProps
+  } = props
+  const controlsVisibility = useControlsVisibility({
+    controlsHideDelay,
+    hideCursorOnIdle,
+  })
 
   return (
     <RootContainer

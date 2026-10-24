@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   dialKitPanelOptions,
   type PlaygroundDialKitMountOptions,
@@ -54,6 +55,14 @@ export const PLAYER_CAROUSEL_DIAL_CONFIG = {
     number,
   ],
   slideTransitionCurve: SLIDE_TRANSITION_CURVE,
+  slideEnter: {
+    enabled: true,
+    staggerMs: [80, 0, 500, 10] as [number, number, number, number],
+    durationMs: [500, 0, 2000, 10] as [number, number, number, number],
+    maxBlurPx: [8, 0, 40, 0.5] as [number, number, number, number],
+    translateYRem: [0.5, 0, 4, 0.0625] as [number, number, number, number],
+  },
+  replaySlideEnter: { type: "action", label: "Replay slide enter" },
   reset: { type: "action", label: "Reset to defaults" },
 };
 
@@ -65,6 +74,8 @@ export const PLAYER_CAROUSEL_DIAL_OPTIONS = {
 export function usePlayerCarouselDialKit(
   mountOptions?: PlaygroundDialKitMountOptions,
 ) {
+  const [slideEnterEpoch, setSlideEnterEpoch] = useState(0);
+
   const dial = useDialKitController(
     PLAYER_CAROUSEL_DIAL_NAME,
     resolveDialConfig(PLAYER_CAROUSEL_DIAL_CONFIG, mountOptions),
@@ -72,14 +83,23 @@ export function usePlayerCarouselDialKit(
       ...PLAYER_CAROUSEL_DIAL_OPTIONS,
       ...dialKitPanelOptions(mountOptions),
       onAction(path) {
-        if (path === "reset") dial.resetValues();
+        if (path === "replaySlideEnter") {
+          setSlideEnterEpoch((value) => value + 1);
+        }
+        if (path === "reset") {
+          dial.resetValues();
+          setSlideEnterEpoch((value) => value + 1);
+        }
       },
     },
   );
 
-  return dial.values;
+  return { values: dial.values, slideEnterEpoch };
 }
 
 export type PlayerCarouselDialValues = ReturnType<
   typeof usePlayerCarouselDialKit
->;
+>["values"];
+
+export type CarouselSlideEnterDialValues =
+  PlayerCarouselDialValues["slideEnter"];

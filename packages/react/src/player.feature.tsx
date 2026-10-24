@@ -21,6 +21,10 @@ import {
   useMemo,
 } from "react";
 import type { TimeHTMLAttributes } from "react";
+import {
+  playerFeatureCrossfadeLayerStyle,
+  usePlayerFeatureCrossfade,
+} from "./player.feature.crossfade";
 
 export const PLAYER_FEATURE_DEFAULTS = {
   titleSizeRem: 3,
@@ -36,7 +40,11 @@ export const PLAYER_FEATURE_DEFAULTS = {
   descriptionMaxWidthRem: 20.5,
   socialButtonBg: "#6a6a6a40",
   socialButtonHoverBg: "#a6a6a640",
+  plusLighter: true,
 } as const;
+
+const featureTextPlusLighterClassName =
+  "[&_[data-vp-feature-part=title]]:mix-blend-plus-lighter [&_[data-vp-feature-part=description]]:mix-blend-plus-lighter [&_[data-vp-feature-part=link]]:mix-blend-plus-lighter [&_[data-vp-feature-part=date]]:mix-blend-plus-lighter [&_[data-vp-feature-part=duration]]:mix-blend-plus-lighter [&_[data-vp-feature-part=follow-label]]:mix-blend-plus-lighter";
 
 type PlayerFeatureMetrics = {
   titleSizeRem: number;
@@ -52,6 +60,7 @@ type PlayerFeatureMetrics = {
   descriptionMaxWidthRem: number;
   socialButtonBg: string;
   socialButtonHoverBg: string;
+  plusLighter: boolean;
 };
 
 const PlayerFeatureContext = createContext<PlayerFeatureMetrics | null>(null);
@@ -149,6 +158,7 @@ export type PlayerFeatureRootProps = HTMLAttributes<HTMLDivElement> & {
   descriptionMaxWidthRem?: number;
   socialButtonBg?: string;
   socialButtonHoverBg?: string;
+  plusLighter?: boolean;
 };
 
 function PlayerFeatureRoot({
@@ -166,6 +176,7 @@ function PlayerFeatureRoot({
   descriptionMaxWidthRem = PLAYER_FEATURE_DEFAULTS.descriptionMaxWidthRem,
   socialButtonBg = PLAYER_FEATURE_DEFAULTS.socialButtonBg,
   socialButtonHoverBg = PLAYER_FEATURE_DEFAULTS.socialButtonHoverBg,
+  plusLighter = PLAYER_FEATURE_DEFAULTS.plusLighter,
   className,
   style,
   ...props
@@ -185,6 +196,7 @@ function PlayerFeatureRoot({
       descriptionMaxWidthRem,
       socialButtonBg,
       socialButtonHoverBg,
+      plusLighter,
     }),
     [
       titleSizeRem,
@@ -200,6 +212,7 @@ function PlayerFeatureRoot({
       descriptionMaxWidthRem,
       socialButtonBg,
       socialButtonHoverBg,
+      plusLighter,
     ],
   );
 
@@ -207,8 +220,10 @@ function PlayerFeatureRoot({
     <PlayerFeatureContext.Provider value={metrics}>
       <div
         data-vp-feature=""
+        data-vp-feature-plus-lighter={plusLighter ? "" : undefined}
         className={cn(
           "flex w-full flex-col items-start text-left font-light",
+          plusLighter && featureTextPlusLighterClassName,
           className,
         )}
         style={{
@@ -347,7 +362,10 @@ function PlayerFeatureLink({
   );
 }
 
-export type PlayerFeaturePlayProps = ComponentProps<typeof Button>;
+export type PlayerFeaturePlayProps = ComponentProps<typeof Button> & {
+  /** Renders the `P` keyboard hint after the label. @default true */
+  showShortcut?: boolean;
+};
 
 function PlayerFeaturePlay({
   children = "Play conversation",
@@ -356,6 +374,7 @@ function PlayerFeaturePlay({
   type = "button",
   variant = "ghost",
   size = "lg",
+  showShortcut = true,
   ...props
 }: PlayerFeaturePlayProps) {
   const { playSizeRem } = usePlayerFeatureMetrics("Play");
@@ -369,7 +388,8 @@ function PlayerFeaturePlay({
       data-vp-feature-part="play"
       className={cn(
         "shrink-0 cursor-pointer rounded-full bg-vp-feature-play-bg text-vp-feature-play-fg hover:bg-vp-feature-play-bg-hover hover:text-vp-feature-play-fg",
-        "[&_[data-slot=kbd]]:bg-black/10 [&_[data-slot=kbd]]:text-vp-feature-play-fg",
+        showShortcut &&
+          "[&_[data-slot=kbd]]:bg-black/10 [&_[data-slot=kbd]]:text-vp-feature-play-fg",
         className,
       )}
       style={{
@@ -389,7 +409,7 @@ function PlayerFeaturePlay({
         }}
       />
       {children}
-      <Kbd>P</Kbd>
+      {showShortcut ? <Kbd>P</Kbd> : null}
     </Button>
   );
 }
@@ -701,4 +721,8 @@ export const PlayerFeature = {
   },
   Play: PlayerFeaturePlay,
   FromActiveVideo: PlayerFeatureFromActiveVideo,
+  Crossfade: {
+    useTransition: usePlayerFeatureCrossfade,
+    layerStyle: playerFeatureCrossfadeLayerStyle,
+  },
 };

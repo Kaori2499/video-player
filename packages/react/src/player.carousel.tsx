@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import {
   createContext,
+  type CSSProperties,
   type HTMLAttributes,
   type ImgHTMLAttributes,
   type ReactNode,
@@ -75,7 +76,7 @@ function cubicBezier(
 }
 
 /** Idle thumbnail height × this scale = reserved frame height; active slide width × this scale. */
-const PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE = 1.4;
+const PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE = 1.35;
 const CAROUSEL_VIDEO_ASPECT = 9 / 16;
 
 function shouldIgnoreCarouselKeyboardEvent(target: EventTarget | null) {
@@ -95,6 +96,31 @@ function shouldIgnoreCarouselKeyboardEvent(target: EventTarget | null) {
   return false;
 }
 
+const PLAYER_CAROUSEL_SLIDE_ENTER_EASE = "cubic-bezier(0, 0, 0.58, 1)";
+
+function playerCarouselSlideEnterStyle(
+  visible: boolean,
+  durationMs: number,
+  delayMs: number,
+  maxBlurPx: number,
+  translateYRem: number,
+): CSSProperties {
+  const y = visible ? 0 : translateYRem;
+  // Hidden state has no transition so replay can snap back to the start,
+  // then the delayed enter runs on the next frame.
+  const transition =
+    visible && durationMs > 0
+      ? `opacity ${durationMs}ms ${PLAYER_CAROUSEL_SLIDE_ENTER_EASE} ${delayMs}ms, filter ${durationMs}ms ${PLAYER_CAROUSEL_SLIDE_ENTER_EASE} ${delayMs}ms, transform ${durationMs}ms ${PLAYER_CAROUSEL_SLIDE_ENTER_EASE} ${delayMs}ms`
+      : "none";
+
+  return {
+    opacity: visible ? 1 : 0,
+    filter: visible ? "blur(0px)" : `blur(${maxBlurPx}px)`,
+    transform: `translateY(${y}rem)`,
+    transition,
+  };
+}
+
 export const PLAYER_CAROUSEL_DEFAULTS = {
   gapRem: 2,
   slideWidthRem: 8.75,
@@ -106,6 +132,11 @@ export const PLAYER_CAROUSEL_DEFAULTS = {
   navButtonHoverBg: "#a6a6a640",
   slideTransitionDurationMs: 320,
   slideTransitionEase: PLAYER_CAROUSEL_SLIDE_EASE_DEFAULT,
+  slideEnterEnabled: true,
+  slideEnterStaggerMs: 80,
+  slideEnterDurationMs: 500,
+  slideEnterMaxBlurPx: 8,
+  slideEnterTranslateYRem: 0.5,
 } as const;
 
 type PlayerCarouselMetrics = {
@@ -119,6 +150,13 @@ type PlayerCarouselMetrics = {
   slideTransitionDurationMs: number;
   slideTransitionEase: PlayerCarouselSlideEase;
   slideTransitionTimingFunction: string;
+  slideEnterEnabled: boolean;
+  slideEnterStaggerMs: number;
+  slideEnterDurationMs: number;
+  slideEnterMaxBlurPx: number;
+  slideEnterTranslateYRem: number;
+  slideEnterBaseDelayMs: number;
+  slideEnterEpoch: number;
 };
 
 type PlayerCarouselState = {
@@ -172,6 +210,15 @@ export type PlayerCarouselRootProps = HTMLAttributes<HTMLDivElement> & {
   onIndexChange?: (index: number) => void;
   /** Arrow Left / Arrow Right navigate prev/next when not typing in a field. @default true */
   keyboardNavigation?: boolean;
+  slideEnterEnabled?: boolean;
+  slideEnterStaggerMs?: number;
+  slideEnterDurationMs?: number;
+  slideEnterMaxBlurPx?: number;
+  slideEnterTranslateYRem?: number;
+  /** Extra delay before the first slide, so page-enter replay stays in view. */
+  slideEnterBaseDelayMs?: number;
+  /** Bump to replay per-slide enter. */
+  slideEnterEpoch?: number;
 };
 
 function PlayerCarouselRoot({
@@ -191,6 +238,13 @@ function PlayerCarouselRoot({
   index: controlledIndex,
   onIndexChange,
   keyboardNavigation = true,
+  slideEnterEnabled = PLAYER_CAROUSEL_DEFAULTS.slideEnterEnabled,
+  slideEnterStaggerMs = PLAYER_CAROUSEL_DEFAULTS.slideEnterStaggerMs,
+  slideEnterDurationMs = PLAYER_CAROUSEL_DEFAULTS.slideEnterDurationMs,
+  slideEnterMaxBlurPx = PLAYER_CAROUSEL_DEFAULTS.slideEnterMaxBlurPx,
+  slideEnterTranslateYRem = PLAYER_CAROUSEL_DEFAULTS.slideEnterTranslateYRem,
+  slideEnterBaseDelayMs = 0,
+  slideEnterEpoch = 0,
   className,
   style,
   ...props
@@ -426,6 +480,13 @@ function PlayerCarouselRoot({
       bleedWidthPx,
       leadSpacerPx,
       trailSpacerPx,
+      slideEnterEnabled,
+      slideEnterStaggerMs,
+      slideEnterDurationMs,
+      slideEnterMaxBlurPx,
+      slideEnterTranslateYRem,
+      slideEnterBaseDelayMs,
+      slideEnterEpoch,
     }),
     [
       gapRem,
@@ -447,6 +508,13 @@ function PlayerCarouselRoot({
       bleedWidthPx,
       leadSpacerPx,
       trailSpacerPx,
+      slideEnterEnabled,
+      slideEnterStaggerMs,
+      slideEnterDurationMs,
+      slideEnterMaxBlurPx,
+      slideEnterTranslateYRem,
+      slideEnterBaseDelayMs,
+      slideEnterEpoch,
     ],
   );
 
@@ -474,12 +542,58 @@ const navButtonClassName =
 
 export type PlayerCarouselControlsProps = HTMLAttributes<HTMLDivElement>;
 
+function useCarouselEnterMotion(part: string, index: number) {
+  const {
+    slideEnterEnabled,
+    slideEnterStaggerMs,
+    slideEnterDurationMs,
+    slideEnterMaxBlurPx,
+    slideEnterTranslateYRem,
+    slideEnterBaseDelayMs,
+    slideEnterEpoch,
+  } = usePlayerCarouselContext(part);
+  const [visible, setVisible] = useState(!slideEnterEnabled);
+
+  useLayoutEffect(() => {
+    if (!slideEnterEnabled) {
+      setVisible(true);
+      return;
+    }
+
+    setVisible(false);
+    let frameA = 0;
+    let frameB = 0;
+    frameA = requestAnimationFrame(() => {
+      frameB = requestAnimationFrame(() => setVisible(true));
+    });
+
+    return () => {
+      cancelAnimationFrame(frameA);
+      cancelAnimationFrame(frameB);
+    };
+  }, [slideEnterEnabled, slideEnterEpoch, index]);
+
+  if (!slideEnterEnabled) {
+    return undefined;
+  }
+
+  return playerCarouselSlideEnterStyle(
+    visible,
+    slideEnterDurationMs,
+    slideEnterBaseDelayMs + index * slideEnterStaggerMs,
+    slideEnterMaxBlurPx,
+    slideEnterTranslateYRem,
+  );
+}
+
 function PlayerCarouselControls({
   className,
+  style,
   ...props
 }: PlayerCarouselControlsProps) {
   const { selectedIndex, setSelectedIndex, slideCount, controlsRef } =
     usePlayerCarouselContext("Controls");
+  const enterStyle = useCarouselEnterMotion("Controls", 0);
 
   const canGoPrev = slideCount > 0 && selectedIndex > 0;
   const canGoNext = slideCount > 0 && selectedIndex < slideCount - 1;
@@ -502,6 +616,7 @@ function PlayerCarouselControls({
         "flex items-center justify-start gap-2",
         className,
       )}
+      style={{ ...enterStyle, ...style }}
       {...props}
     >
       <button
@@ -608,7 +723,9 @@ function PlayerCarouselSlide({
     setSelectedIndex,
     registerSlideRef,
   } = usePlayerCarouselContext("Slide");
+  const enterStyle = useCarouselEnterMotion("Slide", index);
   const active = index === selectedIndex;
+  const widthTransition = `width ${slideTransitionDurationMs}ms ${slideTransitionTimingFunction}`;
 
   return (
     <div
@@ -623,7 +740,10 @@ function PlayerCarouselSlide({
         width: `${
           slideWidthRem * (active ? PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE : 1)
         }rem`,
-        transition: `width ${slideTransitionDurationMs}ms ${slideTransitionTimingFunction}`,
+        ...enterStyle,
+        transition: enterStyle?.transition
+          ? `${widthTransition}, ${enterStyle.transition}`
+          : widthTransition,
         ...style,
       }}
       onClick={() => setSelectedIndex(index)}

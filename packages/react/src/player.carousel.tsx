@@ -15,12 +15,31 @@ import {
   type RefObject,
 } from "react";
 
-const PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS = 320;
-/** Matches CSS `ease-out` (`cubic-bezier(0, 0, 0.58, 1)`). */
-const PLAYER_CAROUSEL_SLIDE_EASE = "cubic-bezier(0, 0, 0.58, 1)";
+export type PlayerCarouselSlideEase = readonly [
+  number,
+  number,
+  number,
+  number,
+];
 
-function cssEaseOut(progress: number) {
-  return cubicBezier(progress, 0, 0, 0.58, 1);
+const PLAYER_CAROUSEL_SLIDE_EASE_DEFAULT: PlayerCarouselSlideEase = [
+  0.4,
+  0.7,
+  0.35,
+  0.86,
+];
+
+function formatSlideTransitionTimingFunction(
+  ease: PlayerCarouselSlideEase,
+): string {
+  return `cubic-bezier(${ease.join(", ")})`;
+}
+
+function evaluateSlideTransitionEase(
+  progress: number,
+  ease: PlayerCarouselSlideEase,
+) {
+  return cubicBezier(progress, ease[0], ease[1], ease[2], ease[3]);
 }
 
 function cubicBezier(
@@ -59,15 +78,34 @@ function cubicBezier(
 const PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE = 1.4;
 const CAROUSEL_VIDEO_ASPECT = 9 / 16;
 
+function shouldIgnoreCarouselKeyboardEvent(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) {
+    return true;
+  }
+  if (target.isContentEditable) {
+    return true;
+  }
+  const tag = target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+    return true;
+  }
+  if (target.closest(".dialkit-root")) {
+    return true;
+  }
+  return false;
+}
+
 export const PLAYER_CAROUSEL_DEFAULTS = {
   gapRem: 2,
   slideWidthRem: 8.75,
   slideRadiusRem: 0.5,
-  paddingTopRem: 1,
+  paddingTopRem: 1.375,
   paddingBottomRem: 3,
   captionTextSizeRem: 0.75,
   navButtonBg: "#6a6a6a26",
   navButtonHoverBg: "#a6a6a640",
+  slideTransitionDurationMs: 320,
+  slideTransitionEase: PLAYER_CAROUSEL_SLIDE_EASE_DEFAULT,
 } as const;
 
 type PlayerCarouselMetrics = {
@@ -78,6 +116,9 @@ type PlayerCarouselMetrics = {
   paddingTopRem: number;
   navButtonBg: string;
   navButtonHoverBg: string;
+  slideTransitionDurationMs: number;
+  slideTransitionEase: PlayerCarouselSlideEase;
+  slideTransitionTimingFunction: string;
 };
 
 type PlayerCarouselState = {
@@ -120,11 +161,17 @@ export type PlayerCarouselRootProps = HTMLAttributes<HTMLDivElement> & {
   captionTextSizeRem?: number;
   navButtonBg?: string;
   navButtonHoverBg?: string;
+  /** Width expansion and scroll alignment duration in milliseconds. */
+  slideTransitionDurationMs?: number;
+  /** Cubic-bezier control points; keep in sync with scroll animation. */
+  slideTransitionEase?: PlayerCarouselSlideEase;
   /** Total slides; required for prev/next navigation bounds. */
   slideCount?: number;
   defaultIndex?: number;
   index?: number;
   onIndexChange?: (index: number) => void;
+  /** Arrow Left / Arrow Right navigate prev/next when not typing in a field. @default true */
+  keyboardNavigation?: boolean;
 };
 
 function PlayerCarouselRoot({
@@ -137,10 +184,13 @@ function PlayerCarouselRoot({
   captionTextSizeRem = PLAYER_CAROUSEL_DEFAULTS.captionTextSizeRem,
   navButtonBg = PLAYER_CAROUSEL_DEFAULTS.navButtonBg,
   navButtonHoverBg = PLAYER_CAROUSEL_DEFAULTS.navButtonHoverBg,
+  slideTransitionDurationMs = PLAYER_CAROUSEL_DEFAULTS.slideTransitionDurationMs,
+  slideTransitionEase = PLAYER_CAROUSEL_DEFAULTS.slideTransitionEase,
   slideCount = 0,
   defaultIndex = 0,
   index: controlledIndex,
   onIndexChange,
+  keyboardNavigation = true,
   className,
   style,
   ...props
@@ -153,11 +203,25 @@ function PlayerCarouselRoot({
   const [bleedWidthPx, setBleedWidthPx] = useState(0);
   const [leadSpacerPx, setLeadSpacerPx] = useState(0);
   const [trailSpacerPx, setTrailSpacerPx] = useState(0);
-  const metricsRef = useRef({ gapRem, slideWidthRem });
+  const slideTransitionTimingFunction = useMemo(
+    () => formatSlideTransitionTimingFunction(slideTransitionEase),
+    [slideTransitionEase],
+  );
+  const metricsRef = useRef({
+    gapRem,
+    slideWidthRem,
+    slideTransitionDurationMs,
+    slideTransitionEase,
+  });
   const scrollFrameRef = useRef<number | null>(null);
   const skipScrollAnimationRef = useRef(true);
 
-  metricsRef.current = { gapRem, slideWidthRem };
+  metricsRef.current = {
+    gapRem,
+    slideWidthRem,
+    slideTransitionDurationMs,
+    slideTransitionEase,
+  };
 
   const selectedIndex = controlledIndex ?? uncontrolledIndex;
 
@@ -195,13 +259,13 @@ function PlayerCarouselRoot({
 
       cancelScrollAnimation();
       const startedAt = performance.now();
+      const { slideTransitionDurationMs: durationMs, slideTransitionEase: ease } =
+        metricsRef.current;
       const tick = (now: number) => {
-        const progress = Math.min(
-          1,
-          (now - startedAt) / PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS,
-        );
+        const progress = Math.min(1, (now - startedAt) / durationMs);
         viewport.scrollLeft =
-          start + (destination - start) * cssEaseOut(progress);
+          start +
+          (destination - start) * evaluateSlideTransitionEase(progress, ease);
         if (progress < 1) {
           scrollFrameRef.current = requestAnimationFrame(tick);
           return;
@@ -234,6 +298,42 @@ function PlayerCarouselRoot({
     },
     [alignSlideWithControls],
   );
+
+  useEffect(() => {
+    if (!keyboardNavigation || slideCount <= 0) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+      if (shouldIgnoreCarouselKeyboardEvent(event.target)) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft" && selectedIndex > 0) {
+        event.preventDefault();
+        setSelectedIndex(selectedIndex - 1);
+        return;
+      }
+      if (event.key === "ArrowRight" && selectedIndex < slideCount - 1) {
+        event.preventDefault();
+        setSelectedIndex(selectedIndex + 1);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    keyboardNavigation,
+    selectedIndex,
+    setSelectedIndex,
+    slideCount,
+  ]);
 
   useLayoutEffect(() => {
     if (skipScrollAnimationRef.current) {
@@ -312,6 +412,9 @@ function PlayerCarouselRoot({
       paddingTopRem,
       navButtonBg,
       navButtonHoverBg,
+      slideTransitionDurationMs,
+      slideTransitionEase,
+      slideTransitionTimingFunction,
       selectedIndex,
       setSelectedIndex,
       slideCount,
@@ -332,6 +435,9 @@ function PlayerCarouselRoot({
       paddingTopRem,
       navButtonBg,
       navButtonHoverBg,
+      slideTransitionDurationMs,
+      slideTransitionEase,
+      slideTransitionTimingFunction,
       selectedIndex,
       setSelectedIndex,
       slideCount,
@@ -496,6 +602,8 @@ function PlayerCarouselSlide({
 }: PlayerCarouselSlideProps) {
   const {
     slideWidthRem,
+    slideTransitionDurationMs,
+    slideTransitionTimingFunction,
     selectedIndex,
     setSelectedIndex,
     registerSlideRef,
@@ -515,7 +623,7 @@ function PlayerCarouselSlide({
         width: `${
           slideWidthRem * (active ? PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE : 1)
         }rem`,
-        transition: `width ${PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS}ms ${PLAYER_CAROUSEL_SLIDE_EASE}`,
+        transition: `width ${slideTransitionDurationMs}ms ${slideTransitionTimingFunction}`,
         ...style,
       }}
       onClick={() => setSelectedIndex(index)}

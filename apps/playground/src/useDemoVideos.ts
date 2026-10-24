@@ -72,8 +72,9 @@ const REMOTE_FALLBACK_VIDEOS: Player.Video[] = [
   },
 ];
 
-function withLocalDemoFirst(videos: Player.Video[]): Player.Video[] {
-  return [LOCAL_DEMO_VIDEO, ...videos];
+/** Local sample is ~300MB; keep it last so the default preview stays lightweight. */
+function withLocalDemoLast(videos: Player.Video[]): Player.Video[] {
+  return [...videos, LOCAL_DEMO_VIDEO];
 }
 
 function pickMp4File(files: ArchiveMetadataResponse["files"]) {
@@ -141,14 +142,12 @@ async function loadDemoVideos(): Promise<Player.Video[]> {
   );
   const remote =
     videos.length > 0 ? videos : REMOTE_FALLBACK_VIDEOS;
-  return withLocalDemoFirst(remote);
+  return withLocalDemoLast(remote);
 }
 
 export function useDemoVideos() {
-  const [videos, setVideos] = useState<Player.Video[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
+  const [videos, setVideos] = useState<Player.Video[]>(REMOTE_FALLBACK_VIDEOS);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("ready");
 
   useEffect(() => {
     let cancelled = false;
@@ -162,7 +161,7 @@ export function useDemoVideos() {
       })
       .catch(() => {
         if (!cancelled) {
-          setVideos(withLocalDemoFirst(REMOTE_FALLBACK_VIDEOS));
+          setVideos(withLocalDemoLast(REMOTE_FALLBACK_VIDEOS));
           setStatus("error");
         }
       });

@@ -11,6 +11,9 @@ export namespace Player {
     description?: string;
     links?: VideoLink[];
     date?: string;
+    /** Preferred source for compact feature duration display. */
+    durationSeconds?: number;
+    durationLabel?: string;
   };
 
   export type Video = {

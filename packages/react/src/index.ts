@@ -9,10 +9,20 @@ export type { Player } from "./player.types";
 export { PlayerContextProvider, usePlayerContext } from "./player.context";
 export type { PlayerContextProviderProps } from "./player.context";
 export { PlayerPreview } from "./player.preview";
-export type { PlayerPreviewUrlProps } from "./player.preview";
+export type {
+  PlayerPreviewActiveProps,
+  PlayerPreviewCrossfadeProps,
+  PlayerPreviewInactiveProps,
+  PlayerPreviewUrlProps,
+} from "./player.preview";
+export { PLAYER_PREVIEW_CROSSFADE_MS } from "./player.preview";
 export { PlayerBlur } from "./player.blur";
 export type { PlayerBlurStrength, PlayerBlurSurfaceProps } from "./player.blur";
-export { PLAYER_FEATURE_DEFAULTS, PlayerFeature } from "./player.feature";
+export {
+  formatFeatureDuration,
+  PLAYER_FEATURE_DEFAULTS,
+  PlayerFeature,
+} from "./player.feature";
 export type {
   PlayerFeatureDateProps,
   PlayerFeatureDescriptionProps,
@@ -37,6 +47,7 @@ export type {
   PlayerCarouselImageProps,
   PlayerCarouselMediaProps,
   PlayerCarouselRootProps,
+  PlayerCarouselSlideEase,
   PlayerCarouselSlideProps,
   PlayerCarouselTitleProps,
   PlayerCarouselTrackProps,
@@ -52,6 +63,7 @@ export type {
 } from "./player.brand";
 export { PLAYER_SHADOW_DEFAULTS, PlayerShadow } from "./player.shadow";
 export type {
+  PlayerShadowAxisMetrics,
   PlayerShadowEdge,
   PlayerShadowEdgeProps,
   PlayerShadowGradientEase,

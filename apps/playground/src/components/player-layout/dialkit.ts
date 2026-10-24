@@ -76,8 +76,14 @@ export const PLAYER_LAYOUT_DIAL_CONFIG = {
   footer: {
     ...regionBase,
     maxWidth: maxWidthSelect("none"),
-    paddingYRem: [1.5, 0, 6, 0.125] as [number, number, number, number],
+    paddingYRem: [0.5, 0, 6, 0.125] as [number, number, number, number],
   },
+  previewCrossfadeDurationMs: [320, 0, 3000, 10] as [
+    number,
+    number,
+    number,
+    number,
+  ],
   reset: { type: "action", label: "Reset to defaults" },
 };
 
@@ -104,6 +110,7 @@ export type PlayerLayoutDialValues = {
   header: PlayerLayoutRegionDial;
   content: PlayerLayoutRegionDial;
   footer: PlayerLayoutRegionDial;
+  previewCrossfadeDurationMs: number;
 };
 
 function remProp(value: number, property: keyof CSSProperties): CSSProperties {

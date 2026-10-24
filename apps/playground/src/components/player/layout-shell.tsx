@@ -7,7 +7,7 @@ import {
   playerLayoutRegionStyle,
   playerLayoutRootStyle,
 } from "../player-layout/dialkit";
-import { useDemoVideos } from "../../useDemoVideos";
+import { useCarouselCatalog } from "../../carousel/useCarouselCatalog";
 
 export function PlayerLayoutShell({
   layout,
@@ -24,12 +24,20 @@ export function PlayerLayoutShell({
   footer?: ReactNode;
   preview?: "active" | "inactive";
 }) {
-  const { videos, status } = useDemoVideos();
+  const { videos, status } = useCarouselCatalog();
 
   if (status === "loading") {
     return (
       <div data-testid="demo-loading" className="demo-loading">
-        Loading open videos…
+        Loading carousel…
+      </div>
+    );
+  }
+
+  if (status === "error" || videos.length === 0) {
+    return (
+      <div data-testid="demo-loading" className="demo-loading">
+        Could not load carousel videos.
       </div>
     );
   }
@@ -44,9 +52,13 @@ export function PlayerLayoutShell({
       >
         <PlayerLayout.Background data-testid="player-layout-background">
           {preview === "inactive" ? (
-            <PlayerPreview.Inactive />
+            <PlayerPreview.Inactive
+              crossfadeDurationMs={layout.previewCrossfadeDurationMs}
+            />
           ) : (
-            <PlayerPreview.Active />
+            <PlayerPreview.Active
+              crossfadeDurationMs={layout.previewCrossfadeDurationMs}
+            />
           )}
         </PlayerLayout.Background>
         <PlayerLayout.Filter data-testid="player-layout-filter">

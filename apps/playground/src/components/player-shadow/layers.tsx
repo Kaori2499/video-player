@@ -5,21 +5,31 @@ import {
 import type { PlayerShadowDialValues } from "./dialkit";
 
 function outerGradientEaseFromDial(
-  curve: PlayerShadowDialValues["outerGradientCurve"],
+  curve: { type: string; ease?: readonly number[] },
 ): PlayerShadowGradientEase | undefined {
-  if (curve.type !== "easing") return undefined;
-  return curve.ease;
+  if (curve.type !== "easing" || !curve.ease) return undefined;
+  return curve.ease as PlayerShadowGradientEase;
 }
 
 export function PlayerShadowLayers({ values }: { values: PlayerShadowDialValues }) {
-  const outerGradientEase = outerGradientEaseFromDial(values.outerGradientCurve);
-
   return (
     <PlayerShadow.Root
-      innerThinRem={values.innerThinRem}
-      outerSizeRem={values.outerSizeRem}
-      wideExcessShare={values.wideExcessShare}
-      outerGradientEase={outerGradientEase}
+      horizontal={{
+        innerThinRem: values.horizontal.innerThinRem,
+        outerSizeRem: values.horizontal.outerSizeRem,
+        wideExcessShare: values.horizontal.wideExcessShare,
+        outerGradientEase: outerGradientEaseFromDial(
+          values.horizontal.outerGradientCurve,
+        ),
+      }}
+      vertical={{
+        innerThinRem: values.vertical.innerThinRem,
+        outerSizeRem: values.vertical.outerSizeRem,
+        wideExcessShare: values.vertical.wideExcessShare,
+        outerGradientEase: outerGradientEaseFromDial(
+          values.vertical.outerGradientCurve,
+        ),
+      }}
     >
       {values.edges.left ? <PlayerShadow.Left /> : null}
       {values.edges.right ? (

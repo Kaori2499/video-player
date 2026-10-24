@@ -56,6 +56,74 @@ type PlayerFeatureMetrics = {
 
 const PlayerFeatureContext = createContext<PlayerFeatureMetrics | null>(null);
 
+const FEATURE_DURATION_COMPACT_RE = /^\d+s$|^\d+m$|^\d+h\d+m$/;
+
+/** Compact feature duration, e.g. `16s`, `13m`, `1h12m`. */
+export function formatFeatureDuration(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return "";
+  }
+
+  const total = Math.max(0, Math.round(seconds));
+
+  if (total < 60) {
+    return `${total}s`;
+  }
+
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h${minutes}m` : `${hours}h`;
+  }
+
+  return `${minutes}m`;
+}
+
+function parseFeatureDurationLabel(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed || FEATURE_DURATION_COMPACT_RE.test(trimmed)) {
+    return undefined;
+  }
+
+  const parts = trimmed.split(":").map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part))) {
+    return undefined;
+  }
+
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+
+  return undefined;
+}
+
+function resolveFeatureDurationDisplay(
+  seconds?: number,
+  fallbackLabel?: string,
+): string | undefined {
+  if (seconds !== undefined) {
+    const formatted = formatFeatureDuration(seconds);
+    return formatted || undefined;
+  }
+
+  if (!fallbackLabel) {
+    return undefined;
+  }
+
+  const parsed = parseFeatureDurationLabel(fallbackLabel);
+  if (parsed !== undefined) {
+    const formatted = formatFeatureDuration(parsed);
+    return formatted || undefined;
+  }
+
+  return fallbackLabel;
+}
+
 function usePlayerFeatureMetrics(part: string): PlayerFeatureMetrics {
   const metrics = useContext(PlayerFeatureContext);
   if (!metrics) {
@@ -352,15 +420,24 @@ function PlayerFeatureDate({
   );
 }
 
-export type PlayerFeatureDurationProps = HTMLAttributes<HTMLSpanElement>;
+export type PlayerFeatureDurationProps = HTMLAttributes<HTMLSpanElement> & {
+  /** When set, shown as compact duration (`16s`, `13m`, `1h12m`). */
+  seconds?: number;
+};
 
 function PlayerFeatureDuration({
   children,
+  seconds,
   className,
   style,
   ...props
 }: PlayerFeatureDurationProps) {
   const { durationSizeRem } = usePlayerFeatureMetrics("Duration");
+  const display =
+    resolveFeatureDurationDisplay(
+      seconds,
+      typeof children === "string" ? children : undefined,
+    ) ?? children;
 
   return (
     <span
@@ -373,7 +450,7 @@ function PlayerFeatureDuration({
       }}
       {...props}
     >
-      {children}
+      {display}
     </span>
   );
 }
@@ -544,10 +621,12 @@ function PlayerFeatureSocialApplePodcasts({
 
 export type PlayerFeatureFromActiveVideoProps = {
   duration?: string;
+  durationSeconds?: number;
 };
 
 function PlayerFeatureFromActiveVideo({
   duration,
+  durationSeconds,
 }: PlayerFeatureFromActiveVideoProps) {
   const { state } = usePlayerContext();
   const metadata = state.activeVideo?.metadata;
@@ -555,6 +634,11 @@ function PlayerFeatureFromActiveVideo({
   if (!metadata) {
     return null;
   }
+
+  const formattedDuration = resolveFeatureDurationDisplay(
+    durationSeconds ?? metadata.durationSeconds,
+    metadata.durationLabel ?? duration,
+  );
 
   return (
     <>
@@ -586,9 +670,13 @@ function PlayerFeatureFromActiveVideo({
         </PlayerFeatureLinks>
       ) : null}
       {metadata.date ? (
-        <PlayerFeatureDate>{metadata.date}</PlayerFeatureDate>
+        <PlayerFeatureDate dateTime={metadata.date}>
+          {metadata.date}
+        </PlayerFeatureDate>
       ) : null}
-      {duration ? <PlayerFeatureDuration>{duration}</PlayerFeatureDuration> : null}
+      {formattedDuration ? (
+        <PlayerFeatureDuration>{formattedDuration}</PlayerFeatureDuration>
+      ) : null}
     </>
   );
 }

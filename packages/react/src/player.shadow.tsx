@@ -17,12 +17,19 @@ export type PlayerShadowEdge = "left" | "right" | "top" | "bottom";
 
 export type PlayerShadowMinViewport = "xl" | "2xl";
 
-export const PLAYER_SHADOW_DEFAULTS = {
+export type PlayerShadowAxisMetrics = {
+  innerThinRem: number;
+  outerSizeRem: number;
+  wideExcessShare: number;
+  outerGradientEase: PlayerShadowGradientEase;
+};
+
+export const PLAYER_SHADOW_DEFAULTS: PlayerShadowAxisMetrics = {
   innerThinRem: 0.5,
   outerSizeRem: 32,
   wideExcessShare: 0.5,
   outerGradientEase: PLAYER_SHADOW_GRADIENT_EASE_DEFAULT,
-} as const;
+};
 
 export type { PlayerShadowGradientEase } from "./player.shadow-gradient";
 export {
@@ -30,41 +37,81 @@ export {
   buildPlayerShadowOuterGradient,
 } from "./player.shadow-gradient";
 
-type PlayerShadowMetrics = {
-  innerThinRem: number;
-  outerSizeRem: number;
-  wideExcessShare: number;
-  outerGradientEase: PlayerShadowGradientEase;
+type PlayerShadowContextValue = {
+  horizontal: PlayerShadowAxisMetrics;
+  vertical: PlayerShadowAxisMetrics;
 };
 
-const PlayerShadowContext = createContext<PlayerShadowMetrics | null>(null);
+const PlayerShadowContext = createContext<PlayerShadowContextValue | null>(null);
 
-function usePlayerShadowMetrics(component: string): PlayerShadowMetrics {
-  const metrics = useContext(PlayerShadowContext);
-  if (!metrics) {
+function isHorizontalEdge(edge: PlayerShadowEdge): boolean {
+  return edge === "left" || edge === "right";
+}
+
+function usePlayerShadowAxisMetrics(
+  component: string,
+  edge: PlayerShadowEdge,
+): PlayerShadowAxisMetrics {
+  const value = useContext(PlayerShadowContext);
+  if (!value) {
     throw new Error(
       `PlayerShadow.${component} must be used within PlayerShadow.Root`,
     );
   }
-  return metrics;
+  return isHorizontalEdge(edge) ? value.horizontal : value.vertical;
 }
 
-export type PlayerShadowRootProps = {
-  children: ReactNode;
+type PlayerShadowAxisMetricsInput = {
   innerThinRem?: number;
   outerSizeRem?: number;
   wideExcessShare?: number;
   outerGradientEase?: PlayerShadowGradientEase;
 };
 
+function resolveAxisMetrics(
+  axis: PlayerShadowAxisMetricsInput | undefined,
+  flat: PlayerShadowAxisMetricsInput,
+): PlayerShadowAxisMetrics {
+  return {
+    innerThinRem:
+      axis?.innerThinRem ?? flat.innerThinRem ?? PLAYER_SHADOW_DEFAULTS.innerThinRem,
+    outerSizeRem:
+      axis?.outerSizeRem ?? flat.outerSizeRem ?? PLAYER_SHADOW_DEFAULTS.outerSizeRem,
+    wideExcessShare:
+      axis?.wideExcessShare ??
+      flat.wideExcessShare ??
+      PLAYER_SHADOW_DEFAULTS.wideExcessShare,
+    outerGradientEase:
+      axis?.outerGradientEase ??
+      flat.outerGradientEase ??
+      PLAYER_SHADOW_DEFAULTS.outerGradientEase,
+  };
+}
+
+export type PlayerShadowRootProps = {
+  children: ReactNode;
+  horizontal?: PlayerShadowAxisMetricsInput;
+  vertical?: PlayerShadowAxisMetricsInput;
+  /** @deprecated Set `horizontal` / `vertical` instead; applies to both axes when used alone. */
+  innerThinRem?: number;
+  /** @deprecated Set `horizontal` / `vertical` instead; applies to both axes when used alone. */
+  outerSizeRem?: number;
+  /** @deprecated Set `horizontal` / `vertical` instead; applies to both axes when used alone. */
+  wideExcessShare?: number;
+  /** @deprecated Set `horizontal` / `vertical` instead; applies to both axes when used alone. */
+  outerGradientEase?: PlayerShadowGradientEase;
+};
+
 function PlayerShadowRoot({
   children,
-  innerThinRem = PLAYER_SHADOW_DEFAULTS.innerThinRem,
-  outerSizeRem = PLAYER_SHADOW_DEFAULTS.outerSizeRem,
-  wideExcessShare = PLAYER_SHADOW_DEFAULTS.wideExcessShare,
-  outerGradientEase = PLAYER_SHADOW_DEFAULTS.outerGradientEase,
+  horizontal,
+  vertical,
+  innerThinRem,
+  outerSizeRem,
+  wideExcessShare,
+  outerGradientEase,
 }: PlayerShadowRootProps) {
-  const metrics = useMemo(
+  const flat = useMemo(
     () => ({
       innerThinRem,
       outerSizeRem,
@@ -74,8 +121,16 @@ function PlayerShadowRoot({
     [innerThinRem, outerSizeRem, wideExcessShare, outerGradientEase],
   );
 
+  const value = useMemo(
+    () => ({
+      horizontal: resolveAxisMetrics(horizontal, flat),
+      vertical: resolveAxisMetrics(vertical, flat),
+    }),
+    [horizontal, vertical, flat],
+  );
+
   return (
-    <PlayerShadowContext.Provider value={metrics}>
+    <PlayerShadowContext.Provider value={value}>
       {children}
     </PlayerShadowContext.Provider>
   );
@@ -87,7 +142,7 @@ const innerWidthClassName =
 const outerWidthClassName = "shrink-0 w-[var(--vp-shadow-outer)]";
 
 const innerHeightClassName =
-  "shrink-0 bg-black h-[clamp(2px,calc(var(--vp-shadow-inner-thin)*100vh/80rem),var(--vp-shadow-inner-thin))] 2xl:h-[calc(var(--vp-shadow-inner-thin)+max(0px,calc((100vw-96rem)*var(--vp-shadow-excess-share))))]";
+  "shrink-0 bg-black h-[clamp(2px,calc(var(--vp-shadow-inner-thin)*100vw/80rem),var(--vp-shadow-inner-thin))] 2xl:h-[calc(var(--vp-shadow-inner-thin)+max(0px,calc((100vw-96rem)*var(--vp-shadow-excess-share))))]";
 
 const outerHeightClassName = "shrink-0 h-[var(--vp-shadow-outer)]";
 
@@ -126,7 +181,7 @@ function shadowStyleVars({
   innerThinRem,
   outerSizeRem,
   wideExcessShare,
-}: PlayerShadowMetrics): CSSProperties {
+}: PlayerShadowAxisMetrics): CSSProperties {
   return {
     "--vp-shadow-inner-thin": `${innerThinRem}rem`,
     "--vp-shadow-outer": `${outerSizeRem}rem`,
@@ -148,7 +203,7 @@ function PlayerShadowEdge({
   style,
   ...props
 }: PlayerShadowEdgeProps & { edge: PlayerShadowEdge }) {
-  const metrics = usePlayerShadowMetrics(edge);
+  const metrics = usePlayerShadowAxisMetrics(edge, edge);
   const classes = edgeClassNames[edge];
   const outerBackgroundImage = buildPlayerShadowOuterGradient(
     edge,

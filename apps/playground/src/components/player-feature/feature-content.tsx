@@ -1,15 +1,16 @@
-import { PlayerFeature } from "@component-template/react";
+import { PlayerFeature, PlayerLayout } from "@component-template/react";
+import { formatCarouselDate } from "../../carousel/catalog";
 import type { PlayerFeatureDialValues } from "./dialkit";
-
-const DEMO_TITLE = "Episode 06";
-const DEMO_DESCRIPTION =
-  "Tara Feener, Product Engineering Manager at the Browser Company, discusses what inspires her when building.";
 
 export function PlayerFeatureContent({
   feature,
 }: {
   feature: PlayerFeatureDialValues;
 }) {
+  const { state } = PlayerLayout.useContext();
+  const metadata = state.activeVideo?.metadata;
+  const sourceLink = metadata?.links?.[0];
+
   return (
     <div className="flex h-full min-h-0 w-full items-center justify-start p-4">
       <PlayerFeature.Root
@@ -27,22 +28,54 @@ export function PlayerFeatureContent({
         gapRem={feature.gapRem}
         descriptionMaxWidthRem={feature.descriptionMaxWidthRem}
       >
-        <PlayerFeature.Intro>
-          <PlayerFeature.Title>{DEMO_TITLE}</PlayerFeature.Title>
-          <PlayerFeature.Description>{DEMO_DESCRIPTION}</PlayerFeature.Description>
-        </PlayerFeature.Intro>
+        {metadata?.title || metadata?.description ? (
+          <PlayerFeature.Intro>
+            {metadata.title ? (
+              <PlayerFeature.Title>{metadata.title}</PlayerFeature.Title>
+            ) : null}
+            {metadata.description ? (
+              <PlayerFeature.Description>
+                {metadata.description}
+              </PlayerFeature.Description>
+            ) : null}
+          </PlayerFeature.Intro>
+        ) : null}
         <PlayerFeature.Play />
         <PlayerFeature.DetailsRow>
           <PlayerFeature.FollowLabel />
           <PlayerFeature.Social.Youtube />
           <PlayerFeature.Social.Spotify />
           <PlayerFeature.Social.ApplePodcasts />
-          <PlayerFeature.Dot />
-          <PlayerFeature.Date dateTime="2024-10-29">
-            {feature.dateText}
-          </PlayerFeature.Date>
-          <PlayerFeature.Dot />
-          <PlayerFeature.Duration>{feature.durationText}</PlayerFeature.Duration>
+          {sourceLink ? (
+            <>
+              <PlayerFeature.Dot />
+              <PlayerFeature.Links className="inline-flex w-auto gap-0 p-0">
+                <PlayerFeature.Link
+                  href={sourceLink.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {sourceLink.label}
+                </PlayerFeature.Link>
+              </PlayerFeature.Links>
+            </>
+          ) : null}
+          {metadata?.date ? (
+            <>
+              <PlayerFeature.Dot />
+              <PlayerFeature.Date dateTime={metadata.date}>
+                {formatCarouselDate(metadata.date)}
+              </PlayerFeature.Date>
+            </>
+          ) : null}
+          {metadata?.durationLabel ? (
+            <>
+              <PlayerFeature.Dot />
+              <PlayerFeature.Duration>
+                {metadata.durationLabel}
+              </PlayerFeature.Duration>
+            </>
+          ) : null}
         </PlayerFeature.DetailsRow>
       </PlayerFeature.Root>
     </div>

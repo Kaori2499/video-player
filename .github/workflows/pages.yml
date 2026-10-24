@@ -30,6 +30,9 @@ jobs:
       - name: Build playground
         run: bun run build:playground
 
+      - name: SPA fallback for GitHub Pages
+        run: cp apps/playground/dist/index.html apps/playground/dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

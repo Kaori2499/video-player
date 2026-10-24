@@ -7,9 +7,11 @@ import "@component-template/react/styles.css";
 import { App } from "./App";
 import "./app.css";
 
+const routerBasename = (import.meta.env.BASE_URL || "/").replace(/\/$/, "") || "/";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/video-player">
+    <BrowserRouter basename={routerBasename}>
       <App />
     </BrowserRouter>
   </StrictMode>,

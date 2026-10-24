@@ -15,7 +15,22 @@ export type CarouselCatalogEntry = {
   credit: string;
 };
 
-export const CAROUSEL_CATALOG_URL = "/carousel/videos.json";
+/** Prefix public/ asset paths with Vite base (required on GitHub project Pages). */
+export function assetUrl(path: string): string {
+  const base = import.meta.env.BASE_URL || "/";
+  const cleaned = path.replace(/^\//, "");
+  return `${base}${cleaned}`;
+}
+
+export const CAROUSEL_CATALOG_URL = assetUrl("carousel/videos.json");
+
+export function withAssetBase(entry: CarouselCatalogEntry): CarouselCatalogEntry {
+  return {
+    ...entry,
+    cover: assetUrl(entry.cover),
+    video: assetUrl(entry.video),
+  };
+}
 
 export function formatCarouselDate(iso: string): string {
   const parsed = new Date(iso);

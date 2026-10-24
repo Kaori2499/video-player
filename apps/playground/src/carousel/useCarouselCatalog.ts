@@ -4,6 +4,7 @@ import {
   CAROUSEL_CATALOG_URL,
   type CarouselCatalogEntry,
   carouselEntryToPlayerVideo,
+  withAssetBase,
 } from "./catalog";
 
 let catalogRequest: Promise<CarouselCatalogEntry[]> | null = null;
@@ -17,6 +18,7 @@ function loadCarouselCatalog() {
         }
         return response.json() as Promise<CarouselCatalogEntry[]>;
       })
+      .then((items) => items.map(withAssetBase))
       .catch((error) => {
         catalogRequest = null;
         throw error;

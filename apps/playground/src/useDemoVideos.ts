@@ -15,7 +15,7 @@ type ArchiveMetadataResponse = {
 };
 
 const LOCAL_DEMO_VIDEO: Player.Video = {
-  url: "/videoplayback.mp4",
+  url: import.meta.env.BASE_URL + "videoplayback.mp4",
   metadata: {
     title: "videoplayback",
     description: "Local sample served from the playground public folder.",

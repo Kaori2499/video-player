@@ -8,6 +8,8 @@ const playgroundDir = path.dirname(fileURLToPath(import.meta.url));
 const reactPkgSrc = path.resolve(playgroundDir, "../../packages/react/src");
 
 export default defineConfig({
+  // GitHub project Pages: https://kaori2499.github.io/video-player/
+  base: "/video-player/",
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
     include: [

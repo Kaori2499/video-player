@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "bun run --filter playground dev",
     "build": "bun run --filter @component-template/react build",
+    "build:playground": "bun run --filter playground build",
     "typecheck": "bun run --filter @component-template/react typecheck && bun run --filter playground typecheck",
     "test": "bun run test:e2e",
     "test:e2e": "playwright test",

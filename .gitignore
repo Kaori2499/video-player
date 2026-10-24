@@ -12,6 +12,10 @@ blob-report
 .cache
 *.log
 .vite
+# Ignore dotfiles/dirs, but keep GitHub Actions
 .*
+!.github/
+!.github/**
+
 # Local oversized demo sample (do not commit; GitHub 100MB limit)
 apps/playground/public/videoplayback.mp4

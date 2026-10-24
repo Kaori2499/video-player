@@ -13,3 +13,5 @@ blob-report
 *.log
 .vite
 .*
+# Local oversized demo sample (do not commit; GitHub 100MB limit)
+apps/playground/public/videoplayback.mp4

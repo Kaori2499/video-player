@@ -244,10 +244,6 @@
   border: 1px solid color-mix(in oklch, var(--foreground) 5%, transparent);
 }
 
-[data-vp-carousel-part="slide"] {
-  transition: width 320ms ease-out;
-}
-
 [data-vp-carousel] {
   scrollbar-width: none;
   -ms-overflow-style: none;

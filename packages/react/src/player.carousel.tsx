@@ -7,11 +7,53 @@ import {
   type ReactNode,
   useCallback,
   useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type RefObject,
 } from "react";
+
+const PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS = 320;
+/** Matches CSS `ease-out` (`cubic-bezier(0, 0, 0.58, 1)`). */
+const PLAYER_CAROUSEL_SLIDE_EASE = "cubic-bezier(0, 0, 0.58, 1)";
+
+function cssEaseOut(progress: number) {
+  return cubicBezier(progress, 0, 0, 0.58, 1);
+}
+
+function cubicBezier(
+  progress: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+) {
+  if (progress <= 0) return 0;
+  if (progress >= 1) return 1;
+
+  const cx = 3 * x1;
+  const bx = 3 * (x2 - x1) - cx;
+  const ax = 1 - cx - bx;
+  const cy = 3 * y1;
+  const by = 3 * (y2 - y1) - cy;
+  const ay = 1 - cy - by;
+  const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;
+  const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;
+  const slopeX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
+
+  let t = progress;
+  for (let index = 0; index < 6; index += 1) {
+    const slope = slopeX(t);
+    if (Math.abs(slope) < 1e-3) break;
+    const error = sampleX(t) - progress;
+    if (Math.abs(error) < 1e-4) break;
+    t = Math.min(1, Math.max(0, t - error / slope));
+  }
+
+  return sampleY(t);
+}
 
 /** Idle thumbnail height × this scale = reserved frame height; active slide width × this scale. */
 const PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE = 1.4;
@@ -44,16 +86,17 @@ type PlayerCarouselState = {
   slideCount: number;
   scrollToIndex: (index: number) => void;
   registerSlideRef: (index: number, node: HTMLDivElement | null) => void;
+  controlsRef: RefObject<HTMLDivElement>;
   viewportRef: RefObject<HTMLDivElement>;
+  bleedLeftPx: number;
+  bleedWidthPx: number;
+  leadSpacerPx: number;
+  trailSpacerPx: number;
 };
 
 type PlayerCarouselContextValue = PlayerCarouselMetrics & PlayerCarouselState;
 
 const PlayerCarouselContext = createContext<PlayerCarouselContextValue | null>(
-  null,
-);
-
-const PlayerCarouselSlideContext = createContext<{ active: boolean } | null>(
   null,
 );
 
@@ -65,16 +108,6 @@ function usePlayerCarouselContext(part: string): PlayerCarouselContextValue {
     );
   }
   return context;
-}
-
-function usePlayerCarouselSlide(part: string) {
-  const slide = useContext(PlayerCarouselSlideContext);
-  if (!slide) {
-    throw new Error(
-      `PlayerCarousel.${part} must be used within PlayerCarousel.Slide`,
-    );
-  }
-  return slide;
 }
 
 export type PlayerCarouselRootProps = HTMLAttributes<HTMLDivElement> & {
@@ -113,10 +146,72 @@ function PlayerCarouselRoot({
   ...props
 }: PlayerCarouselRootProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const controlsRef = useRef<HTMLDivElement | null>(null);
   const slideRefs = useRef(new Map<number, HTMLDivElement>());
   const [uncontrolledIndex, setUncontrolledIndex] = useState(defaultIndex);
+  const [bleedLeftPx, setBleedLeftPx] = useState(0);
+  const [bleedWidthPx, setBleedWidthPx] = useState(0);
+  const [leadSpacerPx, setLeadSpacerPx] = useState(0);
+  const [trailSpacerPx, setTrailSpacerPx] = useState(0);
+  const metricsRef = useRef({ gapRem, slideWidthRem });
+  const scrollFrameRef = useRef<number | null>(null);
+  const skipScrollAnimationRef = useRef(true);
+
+  metricsRef.current = { gapRem, slideWidthRem };
 
   const selectedIndex = controlledIndex ?? uncontrolledIndex;
+
+  const cancelScrollAnimation = useCallback(() => {
+    if (scrollFrameRef.current === null) return;
+    cancelAnimationFrame(scrollFrameRef.current);
+    scrollFrameRef.current = null;
+  }, []);
+
+  const scrollLeftForIndex = useCallback((targetIndex: number) => {
+    const rootFontSize =
+      Number.parseFloat(getComputedStyle(document.documentElement).fontSize) ||
+      16;
+    const { gapRem: gap, slideWidthRem: slideWidth } = metricsRef.current;
+    return Math.max(0, targetIndex * (slideWidth + gap) * rootFontSize);
+  }, []);
+
+  const alignSlideWithControls = useCallback(
+    (targetIndex: number, behavior: ScrollBehavior = "auto") => {
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+
+      const destination = scrollLeftForIndex(targetIndex);
+      if (behavior === "auto") {
+        cancelScrollAnimation();
+        viewport.scrollLeft = destination;
+        return;
+      }
+
+      const start = viewport.scrollLeft;
+      if (Math.abs(destination - start) < 0.5) {
+        viewport.scrollLeft = destination;
+        return;
+      }
+
+      cancelScrollAnimation();
+      const startedAt = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min(
+          1,
+          (now - startedAt) / PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS,
+        );
+        viewport.scrollLeft =
+          start + (destination - start) * cssEaseOut(progress);
+        if (progress < 1) {
+          scrollFrameRef.current = requestAnimationFrame(tick);
+          return;
+        }
+        scrollFrameRef.current = null;
+      };
+      scrollFrameRef.current = requestAnimationFrame(tick);
+    },
+    [cancelScrollAnimation, scrollLeftForIndex],
+  );
 
   const setSelectedIndex = useCallback(
     (nextIndex: number) => {
@@ -133,14 +228,69 @@ function PlayerCarouselRoot({
     [controlledIndex, onIndexChange, slideCount],
   );
 
-  const scrollToIndex = useCallback((targetIndex: number) => {
-    const slide = slideRefs.current.get(targetIndex);
-    slide?.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
-  }, []);
+  const scrollToIndex = useCallback(
+    (targetIndex: number) => {
+      alignSlideWithControls(targetIndex, "smooth");
+    },
+    [alignSlideWithControls],
+  );
+
+  useLayoutEffect(() => {
+    if (skipScrollAnimationRef.current) {
+      skipScrollAnimationRef.current = false;
+      alignSlideWithControls(selectedIndex, "auto");
+      return;
+    }
+
+    alignSlideWithControls(selectedIndex, "smooth");
+    return cancelScrollAnimation;
+  }, [alignSlideWithControls, cancelScrollAnimation, selectedIndex]);
+
+  const syncScrollChrome = useCallback(() => {
+    const viewport = viewportRef.current;
+    const controls = controlsRef.current;
+    if (!viewport || !controls) return;
+
+    const layout = viewport.closest("[data-vp-layout]");
+    const bounds = (layout ?? document.documentElement).getBoundingClientRect();
+    const parent = viewport.parentElement?.getBoundingClientRect();
+    const nextBleedLeft = parent ? bounds.left - parent.left : 0;
+    const nextBleedWidth = bounds.width;
+    const nextLead = Math.max(0, controls.getBoundingClientRect().left - bounds.left);
+    const rootFontSize =
+      Number.parseFloat(getComputedStyle(document.documentElement).fontSize) ||
+      16;
+    const idleSlidePx = slideWidthRem * rootFontSize;
+    const nextTrail = Math.max(0, nextBleedWidth - nextLead - idleSlidePx);
+
+    setBleedLeftPx((current) =>
+      current === nextBleedLeft ? current : nextBleedLeft,
+    );
+    setBleedWidthPx((current) =>
+      current === nextBleedWidth ? current : nextBleedWidth,
+    );
+    setLeadSpacerPx((current) => (current === nextLead ? current : nextLead));
+    setTrailSpacerPx((current) =>
+      current === nextTrail ? current : nextTrail,
+    );
+  }, [slideWidthRem]);
+
+  useLayoutEffect(() => {
+    syncScrollChrome();
+  }, [syncScrollChrome, selectedIndex]);
+
+  useLayoutEffect(() => {
+    alignSlideWithControls(selectedIndex, "auto");
+  }, [alignSlideWithControls, leadSpacerPx, trailSpacerPx]);
+
+  useEffect(() => {
+    const onResize = () => {
+      syncScrollChrome();
+      alignSlideWithControls(selectedIndex, "auto");
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [alignSlideWithControls, selectedIndex, syncScrollChrome]);
 
   const registerSlideRef = useCallback(
     (slideIndex: number, node: HTMLDivElement | null) => {
@@ -167,7 +317,12 @@ function PlayerCarouselRoot({
       slideCount,
       scrollToIndex,
       registerSlideRef,
+      controlsRef,
       viewportRef,
+      bleedLeftPx,
+      bleedWidthPx,
+      leadSpacerPx,
+      trailSpacerPx,
     }),
     [
       gapRem,
@@ -182,6 +337,10 @@ function PlayerCarouselRoot({
       slideCount,
       scrollToIndex,
       registerSlideRef,
+      bleedLeftPx,
+      bleedWidthPx,
+      leadSpacerPx,
+      trailSpacerPx,
     ],
   );
 
@@ -213,32 +372,25 @@ function PlayerCarouselControls({
   className,
   ...props
 }: PlayerCarouselControlsProps) {
-  const {
-    selectedIndex,
-    setSelectedIndex,
-    slideCount,
-    scrollToIndex,
-  } = usePlayerCarouselContext("Controls");
+  const { selectedIndex, setSelectedIndex, slideCount, controlsRef } =
+    usePlayerCarouselContext("Controls");
 
   const canGoPrev = slideCount > 0 && selectedIndex > 0;
   const canGoNext = slideCount > 0 && selectedIndex < slideCount - 1;
 
   const goPrev = () => {
     if (!canGoPrev) return;
-    const next = selectedIndex - 1;
-    setSelectedIndex(next);
-    scrollToIndex(next);
+    setSelectedIndex(selectedIndex - 1);
   };
 
   const goNext = () => {
     if (!canGoNext) return;
-    const next = selectedIndex + 1;
-    setSelectedIndex(next);
-    scrollToIndex(next);
+    setSelectedIndex(selectedIndex + 1);
   };
 
   return (
     <div
+      ref={controlsRef}
       data-vp-carousel-part="controls"
       className={cn(
         "flex items-center justify-start gap-2",
@@ -278,18 +430,21 @@ function PlayerCarouselViewport({
   style,
   ...props
 }: PlayerCarouselViewportProps) {
-  const { viewportRef, paddingTopRem } = usePlayerCarouselContext("Viewport");
+  const { viewportRef, paddingTopRem, bleedLeftPx, bleedWidthPx } =
+    usePlayerCarouselContext("Viewport");
 
   return (
     <div
       ref={viewportRef}
       data-vp-carousel=""
       className={cn(
-        "w-full min-w-0 overflow-x-auto overflow-y-hidden",
+        "min-w-0 max-w-none overflow-x-auto overflow-y-hidden",
         className,
       )}
       style={{
         paddingTop: `${paddingTopRem}rem`,
+        marginLeft: bleedLeftPx,
+        width: bleedWidthPx > 0 ? bleedWidthPx : "100%",
         ...style,
       }}
       {...props}
@@ -307,13 +462,19 @@ function PlayerCarouselTrack({
   style,
   ...props
 }: PlayerCarouselTrackProps) {
-  const { gapRem } = usePlayerCarouselContext("Track");
+  const { gapRem, leadSpacerPx, trailSpacerPx } =
+    usePlayerCarouselContext("Track");
 
   return (
     <div
       data-vp-carousel-part="track"
       className={cn("flex w-max max-w-none flex-nowrap", className)}
-      style={{ gap: `${gapRem}rem`, ...style }}
+      style={{
+        gap: `${gapRem}rem`,
+        paddingLeft: leadSpacerPx,
+        paddingRight: trailSpacerPx,
+        ...style,
+      }}
       {...props}
     >
       {children}
@@ -338,42 +499,36 @@ function PlayerCarouselSlide({
     selectedIndex,
     setSelectedIndex,
     registerSlideRef,
-    scrollToIndex,
   } = usePlayerCarouselContext("Slide");
   const active = index === selectedIndex;
 
   return (
-    <PlayerCarouselSlideContext.Provider value={{ active }}>
-      <div
-        ref={(node) => registerSlideRef(index, node)}
-        data-vp-carousel-part="slide"
-        data-vp-carousel-slide-index={index}
-        role="button"
-        tabIndex={0}
-        data-vp-carousel-slide-active={active ? "" : undefined}
-        className={cn("flex shrink-0 cursor-pointer flex-col", className)}
-        style={{
-          width: `${
-            slideWidthRem * (active ? PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE : 1)
-          }rem`,
-          ...style,
-        }}
-        onClick={() => {
+    <div
+      ref={(node) => registerSlideRef(index, node)}
+      data-vp-carousel-part="slide"
+      data-vp-carousel-slide-index={index}
+      role="button"
+      tabIndex={0}
+      data-vp-carousel-slide-active={active ? "" : undefined}
+      className={cn("flex shrink-0 cursor-pointer flex-col", className)}
+      style={{
+        width: `${
+          slideWidthRem * (active ? PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE : 1)
+        }rem`,
+        transition: `width ${PLAYER_CAROUSEL_SLIDE_WIDTH_TRANSITION_MS}ms ${PLAYER_CAROUSEL_SLIDE_EASE}`,
+        ...style,
+      }}
+      onClick={() => setSelectedIndex(index)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
           setSelectedIndex(index);
-          scrollToIndex(index);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setSelectedIndex(index);
-            scrollToIndex(index);
-          }
-        }}
-        {...props}
-      >
-        {children}
-      </div>
-    </PlayerCarouselSlideContext.Provider>
+        }
+      }}
+      {...props}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -386,7 +541,6 @@ function PlayerCarouselMedia({
   ...props
 }: PlayerCarouselMediaProps) {
   const { slideRadiusRem, slideWidthRem } = usePlayerCarouselContext("Media");
-  const { active } = usePlayerCarouselSlide("Media");
   const idleVideoHeightRem = slideWidthRem * CAROUSEL_VIDEO_ASPECT;
   const frameHeightRem = idleVideoHeightRem * PLAYER_CAROUSEL_ACTIVE_MEDIA_SCALE;
 
@@ -402,11 +556,9 @@ function PlayerCarouselMedia({
     >
       <div
         data-vp-carousel-part="media"
-        data-vp-carousel-media-active={active ? "" : undefined}
-        className="aspect-video w-full shrink-0 overflow-hidden transition-shadow"
+        className="aspect-video w-full shrink-0 overflow-hidden"
         style={{
           borderRadius: `${slideRadiusRem}rem`,
-          boxShadow: active ? "0 0 0 2px white" : undefined,
         }}
       >
         {children}

@@ -10,7 +10,7 @@ component-template/
 |-- apps/playground/    # Vite preview host
 |-- e2e/                # Playwright against the playground
 |-- .github/workflows/  # CI: install -> build -> typecheck -> e2e
-\-- playwright.config.ts
+-- playwright.config.ts
 ```
 
 ## Commands

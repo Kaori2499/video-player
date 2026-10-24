@@ -49,6 +49,7 @@ export function carouselEntryToPlayerVideo(
 ): Player.Video {
   return {
     url: entry.video,
+    poster: entry.cover,
     metadata: {
       title: entry.title,
       description: entry.description,

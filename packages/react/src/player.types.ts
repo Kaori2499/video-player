@@ -18,6 +18,8 @@ export namespace Player {
 
   export type Video = {
     url: string;
+    /** Still shown while the preview video buffers. */
+    poster?: string;
     metadata?: VideoMetadata;
   };
 

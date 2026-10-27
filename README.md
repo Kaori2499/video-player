@@ -116,4 +116,14 @@ MIT — see [LICENSE](./LICENSE).
 
 ## Credits
 
-See [.credits.txt](./.credits.txt) and [Mixkit](https://mixkit.co/) for playground carousel media.
+Playground carousel clips and posters: [Mixkit](https://mixkit.co/) (see per-item `source` in `apps/playground/public/carousel/videos.json`).
+
+Design and interaction references:
+
+- [Linear — Quality 02](https://linear.app/quality/02)
+- [Sonner](https://sonner.emilkowal.ski/)
+- [Vaul](https://vaul.emilkowal.ski/)
+- [Paco Coursey — X post](https://x.com/pacocoursey/status/1852482356944556250)
+- [Linear — Custom feeds in Pulse (media players)](https://linear.app/changelog/2025-05-15-custom-feeds-in-pulse#new-media-players)
+- [Emil Kowalski — X post](https://x.com/emilkowalski/status/2104656750620389844)
+- [Julian Lehr — X post](https://x.com/julianlehr/status/1853075109700895094)

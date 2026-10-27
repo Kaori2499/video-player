@@ -8,117 +8,107 @@
   />
 </p>
 
-Monorepo for a compound **player page** UI and a publishable React package built on [Limeplay](https://limeplay.dev/) (Shaka-backed `VideoPlayer`). The Vite playground hosts isolated demos, DialKit tuning panels, and a full-page preview with background video, feature copy, carousel, and overlay playback.
+Full-viewport **video player page** for React: background preview, feature copy, episode carousel, and atmosphere (blur, vignette). Install one [shadcn registry](https://ui.shadcn.com/docs/registry) block, pass `videos`, and render.
 
-**Live playground:** https://kaori2499.github.io/video-player/
+**Live preview:** https://kaori2499.github.io/video-player/
 
-```
-video-player/
-├── packages/react/     # @component-template/react — layout, preview, feature, carousel, VideoPlayer
-├── apps/playground/    # Vite app (routes per sub-system + main player page)
-├── e2e/                # Playwright smoke tests
-├── .github/workflows/  # CI + GitHub Pages
-└── .credits.txt        # Design / inspiration references (also listed below)
-```
-
-## Commands
+## Install
 
 ```bash
-bun install
-bun run build              # packages/react → dist/ (ESM + CJS + CSS)
-bun run build:playground
-bun run dev                # http://127.0.0.1:5173
-bun run typecheck
-bunx playwright install chromium   # once
-bun run test:e2e
+bunx --bun shadcn@latest add kaori2499/video-player/video-player-block
 ```
 
-During development, the playground resolves `@component-template/react` to `packages/react/src` via Vite aliases so you can iterate without rebuilding `dist` on every change.
+Requires a shadcn/ui project (Tailwind v4, `button`, `kbd`). The block pulls in layout, preview, feature, carousel, brand, shadow, and blur as source under `components/video-player-block/`.
 
-## Playground routes
+After GitHub Pages has published the registry JSON, you can also use:
 
-| Path | Focus |
+```bash
+bunx --bun shadcn@latest add @video-player/video-player-block
+```
+
+(`@video-player` → `https://kaori2499.github.io/video-player/r/{name}.json` in this repo’s `components.json`.)
+
+## Usage
+
+```tsx
+import { VideoPlayerBlock } from "@/components/video-player-block/video-player-block";
+
+const videos = [
+  {
+    url: "/media/episode-01.mp4",
+    poster: "/media/episode-01.jpg",
+    metadata: {
+      title: "Episode title",
+      description: "Short description shown in the feature column.",
+      date: "2024-10-29",
+      durationLabel: "16 min",
+      links: [{ label: "Source", href: "https://example.com" }],
+    },
+  },
+  // …
+];
+
+export function PlayerPage() {
+  return (
+    <VideoPlayerBlock
+      videos={videos}
+      onPlay={() => {
+        /* open your player overlay or route */
+      }}
+    />
+  );
+}
+```
+
+| Field | Role |
 | --- | --- |
-| `/` | Full player page (layout, brand, feature, carousel, playback overlay) |
-| `/player-layout` | Layout regions and preview crossfade |
-| `/player-brand` | Brand header |
-| `/player-feature` | Title, description, play, social, metadata |
-| `/player-carousel` | Episode carousel |
-| `/player-shadow` | Edge shadow gradients |
-| `/player-blur` | Background blur strength |
+| `videos` | Clips in the carousel; drives preview, copy, and active index |
+| `defaultActiveIndex` | Optional starting episode (default `0`) |
+| `onPlay` | Play button and **P** shortcut (when focus is not in a field) |
+| `children` | Optional nodes inside the player context (e.g. bind play to a custom overlay via `VideoPlayerBlockBindPlay`) |
 
-Carousel clips and posters are loaded from `apps/playground/public/carousel/` (catalog: `videos.json`). Preview video credits: [Mixkit](https://mixkit.co/) (see per-item `source` in the catalog).
+Typography, motion, spacing, shadows, and blur are fixed inside the block—no DialKit-style props.
 
-## Package surface (`@component-template/react`)
+### `VideoPlayerBlockBindPlay`
 
-Compound building blocks:
+When playback lives in a child provider:
 
-- **VideoPlayerBlock** — the full page block. Pass `videos`; preview, feature copy, carousel, and atmosphere are fixed
-- **PlayerLayout** — full-viewport grid (background, filter, header, content, footer)
-- **PlayerPreview** — looping or first-frame background video with crossfade
-- **PlayerFeature** — metadata column (title, play, social, date/duration)
-- **PlayerCarousel** — horizontal episode strip
-- **PlayerBrand**, **PlayerShadow**, **PlayerBlur** — chrome and atmosphere
-- **VideoPlayer** — Limeplay player with controls (timeline, volume, PiP, fullscreen, playlist)
+```tsx
+<VideoPlayerBlock videos={videos}>
+  <PlaybackProvider>
+    <VideoPlayerBlockBindPlay onPlay={openPlayback} />
+  </PlaybackProvider>
+</VideoPlayerBlock>
+```
+
+## npm package (optional)
+
+For lower-level pieces or the Limeplay **VideoPlayer** (Shaka, controls, playlist), use `@component-template/react`:
+
+```bash
+bun run build   # in this monorepo, or install from npm when published
+```
 
 ```tsx
 import { PlayerLayout, VideoPlayer } from "@component-template/react";
 import "@component-template/react/styles.css";
 ```
 
-Import styles once in your app root. React is a peer dependency.
+Individual UI regions are also on the registry (`player-layout`, `player-feature`, `player-carousel`, …) if you prefer to compose instead of `video-player-block`.
 
-## Install via shadcn (copy into your app)
-
-This repo publishes a [shadcn registry](https://ui.shadcn.com/docs/registry) so you can install player building blocks the same way as primitives like `kbd`:
-
-Install the whole page and pass `videos`. Sizes, motion, shadows, and blur are already set inside the block.
-
-```tsx
-import { VideoPlayerBlock } from "@/components/video-player-block/video-player-block";
-
-<VideoPlayerBlock videos={videos} />
-```
-
-`videos` is `Player.Video[]`: `url`, optional `poster`, and optional `metadata` (`title`, `description`, `links`, `date`, `durationSeconds`, `durationLabel`). Pass `onPlay` when the play control should open your own player.
+## Develop this repo
 
 ```bash
-# Official shadcn/ui primitive (already in packages/react)
-bunx --bun shadcn@latest add kbd
-
-# After this repo is pushed and GitHub Pages has run registry:build:
-bunx --bun shadcn@latest add @video-player/video-player-block
-
-# Individual regions, if you compose them yourself:
-bunx --bun shadcn@latest add @video-player/player-feature
-bunx --bun shadcn@latest add @video-player/player-layout
-bunx --bun shadcn@latest add @video-player/player-carousel
+bun install
+bun run dev          # playground at http://127.0.0.1:5173 — `/` is the full block
+bun run typecheck
+bun run test:e2e     # bunx playwright install chromium once
 ```
-
-Or install from the public GitHub source registry (no pre-built `/r` JSON required):
 
 ```bash
-bunx --bun shadcn@latest add kaori2499/video-player/video-player-block
+bun run sync:registry    # copy packages/react/src → registry/items/video-player/
+bun run registry:build   # sync + apps/playground/public/r/*.json for Pages
 ```
-
-**Maintainers:** registry source files are synced from `packages/react/src` into `registry/items/video-player/`:
-
-```bash
-bun run sync:registry      # copy sources
-bun run registry:build     # sync + emit apps/playground/public/r/*.json for Pages
-```
-
-`components.json` in `packages/react` includes:
-
-```json
-"@video-player": "https://kaori2499.github.io/video-player/r/{name}.json"
-```
-
-The **Limeplay `VideoPlayer`** (Shaka, hooks, controls) is not a single-file registry item yet — use the npm package `@component-template/react` or copy from `packages/react/src/components/video-player` and `hooks/limeplay`. Registry items cover the compound **player page** UI (`PlayerLayout`, `PlayerFeature`, `PlayerCarousel`, etc.).
-
-## Publishing
-
-Only `packages/react` is intended for npm (`files`: `dist`). Build with `bun run build`; CSS is exported as `@component-template/react/styles.css`.
 
 ## License
 
@@ -126,12 +116,4 @@ MIT — see [LICENSE](./LICENSE).
 
 ## Credits
 
-Design and interaction references (also kept in [.credits.txt](./.credits.txt)):
-
-- [Linear — Quality 02](https://linear.app/quality/02)
-- [Sonner](https://sonner.emilkowal.ski/)
-- [Vaul](https://vaul.emilkowal.ski/)
-- [Paco Coursey — X post](https://x.com/pacocoursey/status/1852482356944556250)
-- [Linear — Custom feeds in Pulse (media players)](https://linear.app/changelog/2025-05-15-custom-feeds-in-pulse#new-media-players)
-- [Emil Kowalski — X post](https://x.com/emilkowalski/status/2104656750620389844)
-- [Julian Lehr — X post](https://x.com/julianlehr/status/1853075109700895094)
+See [.credits.txt](./.credits.txt) and [Mixkit](https://mixkit.co/) for playground carousel media.

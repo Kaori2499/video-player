@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "player-blur",
+  "title": "Player Blur",
+  "description": "Full-bleed backdrop blur overlay.",
+  "files": [
+    {
+      "path": "registry/items/video-player/components/player-blur/player.blur.tsx",
+      "content": "import { cn } from \"@/lib/utils\";\nimport type { HTMLAttributes } from \"react\";\n\nexport type PlayerBlurStrength = \"sm\" | \"md\" | \"lg\";\n\nconst blurShellClassName =\n  \"pointer-events-none absolute inset-0 z-[2] h-full w-full\";\n\nexport type PlayerBlurSurfaceProps = Omit<\n  HTMLAttributes<HTMLDivElement>,\n  \"children\"\n>;\n\nfunction PlayerBlurSm({ className, ...props }: PlayerBlurSurfaceProps) {\n  return (\n    <div\n      data-vp-blur=\"\"\n      data-vp-blur-strength=\"sm\"\n      aria-hidden\n      className={cn(blurShellClassName, \"backdrop-blur-sm\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction PlayerBlurMd({ className, ...props }: PlayerBlurSurfaceProps) {\n  return (\n    <div\n      data-vp-blur=\"\"\n      data-vp-blur-strength=\"md\"\n      aria-hidden\n      className={cn(blurShellClassName, \"backdrop-blur-md\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction PlayerBlurLg({ className, ...props }: PlayerBlurSurfaceProps) {\n  return (\n    <div\n      data-vp-blur=\"\"\n      data-vp-blur-strength=\"lg\"\n      aria-hidden\n      className={cn(blurShellClassName, \"backdrop-blur-lg\", className)}\n      {...props}\n    />\n  );\n}\n\nexport const PlayerBlur = {\n  Sm: PlayerBlurSm,\n  Md: PlayerBlurMd,\n  Lg: PlayerBlurLg,\n};\n",
+      "type": "registry:component"
+    }
+  ],
+  "type": "registry:component"
+}

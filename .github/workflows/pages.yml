@@ -27,6 +27,9 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
+      - name: Build shadcn registry
+        run: bun run registry:build
+
       - name: Build playground
         run: bun run build:playground
 

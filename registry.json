@@ -1,0 +1,6 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "video-player",
+  "homepage": "https://kaori2499.github.io/video-player/",
+  "include": ["registry/items/registry.json"]
+}

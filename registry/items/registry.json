@@ -1,0 +1,205 @@
+{
+  "items": [
+    {
+      "name": "video-player-block",
+      "type": "registry:block",
+      "title": "Video Player Block",
+      "description": "Full player page. Pass videos into the block; layout, preview, feature, and carousel are already set.",
+      "dependencies": ["simple-icons", "@phosphor-icons/react"],
+      "registryDependencies": ["button", "kbd"],
+      "files": [
+        {
+          "path": "video-player/components/video-player-block/video-player-block.tsx",
+          "type": "registry:block",
+          "target": "@components/video-player-block/video-player-block.tsx"
+        },
+        {
+          "path": "video-player/components/player-layout/player.layout.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.layout.tsx"
+        },
+        {
+          "path": "video-player/components/player-preview/player.preview.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.preview.tsx"
+        },
+        {
+          "path": "video-player/components/player-feature/player.feature.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.feature.tsx"
+        },
+        {
+          "path": "video-player/components/player-feature/player.feature.crossfade.tsx",
+          "type": "registry:lib",
+          "target": "@components/video-player-block/player.feature.crossfade.tsx"
+        },
+        {
+          "path": "video-player/components/player-feature/player.feature.simple-icon.tsx",
+          "type": "registry:lib",
+          "target": "@components/video-player-block/player.feature.simple-icon.tsx"
+        },
+        {
+          "path": "video-player/components/player-carousel/player.carousel.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.carousel.tsx"
+        },
+        {
+          "path": "video-player/components/player-brand/player.brand.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.brand.tsx"
+        },
+        {
+          "path": "video-player/components/player-shadow/player.shadow.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.shadow.tsx"
+        },
+        {
+          "path": "video-player/components/player-shadow/player.shadow-gradient.ts",
+          "type": "registry:lib",
+          "target": "@components/video-player-block/player.shadow-gradient.ts"
+        },
+        {
+          "path": "video-player/components/player-blur/player.blur.tsx",
+          "type": "registry:component",
+          "target": "@components/video-player-block/player.blur.tsx"
+        },
+        {
+          "path": "video-player/lib/player.context.tsx",
+          "type": "registry:lib",
+          "target": "@components/video-player-block/player.context.tsx"
+        },
+        {
+          "path": "video-player/lib/player.types.ts",
+          "type": "registry:lib",
+          "target": "@components/video-player-block/player.types.ts"
+        }
+      ]
+    },
+    {
+      "name": "player-layout",
+      "type": "registry:component",
+      "title": "Player Layout",
+      "description": "Full-viewport player shell with background, filter, header, content, and footer regions.",
+      "files": [
+        {
+          "path": "video-player/components/player-layout/player.layout.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "video-player/lib/player.context.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/lib/player.types.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "player-feature",
+      "type": "registry:component",
+      "title": "Player Feature",
+      "description": "Title, description, play control, social buttons, and metadata for the active video.",
+      "dependencies": ["simple-icons", "@phosphor-icons/react"],
+      "registryDependencies": ["button", "kbd"],
+      "files": [
+        {
+          "path": "video-player/components/player-feature/player.feature.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "video-player/components/player-feature/player.feature.crossfade.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/components/player-feature/player.feature.simple-icon.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/lib/player.context.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/lib/player.types.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "player-preview",
+      "type": "registry:component",
+      "title": "Player Preview",
+      "description": "Background preview video with crossfade when the active clip changes.",
+      "files": [
+        {
+          "path": "video-player/components/player-preview/player.preview.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "video-player/lib/player.context.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/lib/player.types.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "player-carousel",
+      "type": "registry:component",
+      "title": "Player Carousel",
+      "description": "Horizontal episode carousel with expanding active slide.",
+      "files": [
+        {
+          "path": "video-player/components/player-carousel/player.carousel.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "video-player/lib/player.context.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "video-player/lib/player.types.ts",
+          "type": "registry:lib"
+        }
+      ]
+    },
+    {
+      "name": "player-brand",
+      "type": "registry:component",
+      "title": "Player Brand",
+      "description": "Compact brand label for the player header.",
+      "files": [
+        {
+          "path": "video-player/components/player-brand/player.brand.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "player-shadow",
+      "type": "registry:component",
+      "title": "Player Shadow",
+      "description": "Edge vignette gradients for legibility over video.",
+      "files": [
+        {
+          "path": "video-player/components/player-shadow/player.shadow.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "player-blur",
+      "type": "registry:component",
+      "title": "Player Blur",
+      "description": "Full-bleed backdrop blur overlay.",
+      "files": [
+        {
+          "path": "video-player/components/player-blur/player.blur.tsx",
+          "type": "registry:component"
+        }
+      ]
+    }
+  ]
+}

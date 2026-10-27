@@ -42,9 +42,12 @@ function shouldIgnorePlaybackShortcut(target: EventTarget | null) {
 export function PlayerPlaybackProvider({
   children,
   dialMountOptions,
+  shortcut = true,
 }: {
   children: ReactNode;
   dialMountOptions?: PlaygroundDialKitMountOptions;
+  /** When false, a parent such as `VideoPlayerBlock` owns the P shortcut. */
+  shortcut?: boolean;
 }) {
   const overlayMotion = usePlayerPlaybackDialKit(dialMountOptions);
   const [open, setOpen] = useState(false);
@@ -64,6 +67,10 @@ export function PlayerPlaybackProvider({
   );
 
   useEffect(() => {
+    if (!shortcut) {
+      return;
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "p" && event.key !== "P") {
         return;
@@ -80,7 +87,7 @@ export function PlayerPlaybackProvider({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [togglePlayback]);
+  }, [shortcut, togglePlayback]);
 
   return (
     <PlayerPlaybackContext.Provider value={value}>

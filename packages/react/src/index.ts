@@ -74,6 +74,8 @@ export type {
   PlayerBrandSeparatorProps,
 } from "./player.brand";
 export { PLAYER_SHADOW_DEFAULTS, PlayerShadow } from "./player.shadow";
+export { VideoPlayerBlock, VideoPlayerBlockBindPlay } from "./video-player-block";
+export type { VideoPlayerBlockProps } from "./video-player-block";
 export type {
   PlayerShadowAxisMetrics,
   PlayerShadowEdge,

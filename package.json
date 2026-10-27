@@ -13,6 +13,8 @@
     "typecheck": "bun run --filter @component-template/react typecheck && bun run --filter playground typecheck",
     "test": "bun run test:e2e",
     "test:e2e": "playwright test",
+    "sync:registry": "node scripts/sync-registry.mjs",
+    "registry:build": "node scripts/sync-registry.mjs && bunx --bun shadcn@latest build registry.json --output apps/playground/public/r",
     "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {

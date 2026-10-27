@@ -53,6 +53,7 @@ Carousel clips and posters are loaded from `apps/playground/public/carousel/` (c
 
 Compound building blocks:
 
+- **VideoPlayerBlock** — the full page block. Pass `videos`; preview, feature copy, carousel, and atmosphere are fixed
 - **PlayerLayout** — full-viewport grid (background, filter, header, content, footer)
 - **PlayerPreview** — looping or first-frame background video with crossfade
 - **PlayerFeature** — metadata column (title, play, social, date/duration)
@@ -66,6 +67,54 @@ import "@component-template/react/styles.css";
 ```
 
 Import styles once in your app root. React is a peer dependency.
+
+## Install via shadcn (copy into your app)
+
+This repo publishes a [shadcn registry](https://ui.shadcn.com/docs/registry) so you can install player building blocks the same way as primitives like `kbd`:
+
+Install the whole page and pass `videos`. Sizes, motion, shadows, and blur are already set inside the block.
+
+```tsx
+import { VideoPlayerBlock } from "@/components/video-player-block/video-player-block";
+
+<VideoPlayerBlock videos={videos} />
+```
+
+`videos` is `Player.Video[]`: `url`, optional `poster`, and optional `metadata` (`title`, `description`, `links`, `date`, `durationSeconds`, `durationLabel`). Pass `onPlay` when the play control should open your own player.
+
+```bash
+# Official shadcn/ui primitive (already in packages/react)
+bunx --bun shadcn@latest add kbd
+
+# After this repo is pushed and GitHub Pages has run registry:build:
+bunx --bun shadcn@latest add @video-player/video-player-block
+
+# Individual regions, if you compose them yourself:
+bunx --bun shadcn@latest add @video-player/player-feature
+bunx --bun shadcn@latest add @video-player/player-layout
+bunx --bun shadcn@latest add @video-player/player-carousel
+```
+
+Or install from the public GitHub source registry (no pre-built `/r` JSON required):
+
+```bash
+bunx --bun shadcn@latest add kaori2499/video-player/video-player-block
+```
+
+**Maintainers:** registry source files are synced from `packages/react/src` into `registry/items/video-player/`:
+
+```bash
+bun run sync:registry      # copy sources
+bun run registry:build     # sync + emit apps/playground/public/r/*.json for Pages
+```
+
+`components.json` in `packages/react` includes:
+
+```json
+"@video-player": "https://kaori2499.github.io/video-player/r/{name}.json"
+```
+
+The **Limeplay `VideoPlayer`** (Shaka, hooks, controls) is not a single-file registry item yet — use the npm package `@component-template/react` or copy from `packages/react/src/components/video-player` and `hooks/limeplay`. Registry items cover the compound **player page** UI (`PlayerLayout`, `PlayerFeature`, `PlayerCarousel`, etc.).
 
 ## Publishing
 
